@@ -1,3 +1,7 @@
+"""
+Script para entrenar CNN 1D con datos capturados del Arduino
+Lee archivos limpios, crea ventanas y entrena modelo
+"""
 import pandas as pd
 import numpy as np
 from pathlib import Path
@@ -9,65 +13,105 @@ from tensorflow.keras.callbacks import EarlyStopping
 import matplotlib.pyplot as plt
 import seaborn as sns
 
-#Configuracion cnn
-WINDOW_SIZE = 40   # 2s a 20Hz
-OVERLAP = 20       # 50%
+# --- CONFIGURACIÓN ---
+DATOS_DIR = Path(__file__).parent / "datos_limpios"
+WINDOW_SIZE = 100  # 80 muestras = 2 segundos a 40Hz
+OVERLAP = 50 
 TEST_SIZE = 0.2
 EPOCHS = 15
 BATCH_SIZE = 16
 
 
-archivo_caidas   = Path(r"Codigos_raspberry\datos_limpios\datos_capturados_caidas (1).csv")
-archivo_normales = Path(r"Codigos_raspberry\datos_limpios\datos_capturados_normales.csv")
+RUTA_NORMAL = Path("datos_capturados_normales.csv")
+RUTA_CAIDA  = Path("datos_capturados_caidas (1).csv")
 
-ARCHIVOS = {
-    archivo_caidas: 1,     # caída
-    archivo_normales: 0    # normal
-}
-
-COLUMNAS = ['ax', 'ay', 'az', 'gx', 'gy', 'gz']
+archivos = [
+    (RUTA_NORMAL, 0),   # etiqueta 0 → NORMAL
+    (RUTA_CAIDA,  1)    # etiqueta 1 → CAÍDA
+]
 
 datos_totales = []
 etiquetas_totales = []
 
-COLUMNAS = [
-    'cadera_ax','cadera_ay','cadera_az','cadera_gx','cadera_gy','cadera_gz',
-    'pierna_ax','pierna_ay','pierna_az','pierna_gx','pierna_gy','pierna_gz'
-]
+print("📂 Cargando archivos fijos...")
 
-cols_giro = [
-    'cadera_gx','cadera_gy','cadera_gz',
-    'pierna_gx','pierna_gy','pierna_gz'
-]
+for ruta, etiqueta in archivos:
+    print(f"\n📄 Archivo: {ruta.name}  → Etiqueta: {etiqueta}")
 
-for archivo, etiqueta in ARCHIVOS.items():
-    print(f"\n📄 Procesando: {archivo.name}")
-    df = pd.read_csv(archivo)
+    if not ruta.exists():
+        print(f"❌ ERROR: No existe el archivo: {ruta}")
+        exit(1)
 
-    # Escalar giroscopio para dar mas prioridad al giroscopio
-    df[cols_giro] *= 4.0
+    # Cargar CSV
+    df = pd.read_csv(ruta)
+    columnas = df.columns.tolist()
 
+    # Detectar columnas disponibles
+    if 'cadera_ax' in columnas and 'pierna_ax' in columnas:
+        cols = [
+            'cadera_ax','cadera_ay','cadera_az','cadera_gx','cadera_gy','cadera_gz',
+            'pierna_ax','pierna_ay','pierna_az','pierna_gx','pierna_gy','pierna_gz'
+        ]
+        print("   → Usando datos de CADERA + PIERNA (12 features)")
+    elif 'cadera_ax' in columnas:
+        cols = ['cadera_ax','cadera_ay','cadera_az','cadera_gx','cadera_gy','cadera_gz']
+        print("   → Usando datos del sensor CADERA (6 features)")
+    else:
+        cols = ['ax','ay','az','gx','gy','gz']
+        print("   → Usando sensor único (6 features)")
+
+    print(f"   → Total muestras: {len(df)}")
+
+    # Escalar giroscopio
+    cols_giro = [c for c in cols if 'gx' in c or 'gy' in c or 'gz' in c]
+    df[cols_giro] = df[cols_giro] * 4.0
+    print(f"   → Giroscopio escalado x1: {cols_giro}")
+
+    FACTOR_CADERA = 1.0
+
+    cols_cadera = [c for c in cols if 'cadera_' in c]
+    df[cols_cadera] = df[cols_cadera] * FACTOR_CADERA
+    print(f"   → Peso aplicado a cadera: {FACTOR_CADERA}x")
+
+    # Crear ventanas
+    ventanas_creadas = 0
     for i in range(0, len(df) - WINDOW_SIZE + 1, OVERLAP):
-        ventana = df.iloc[i:i+WINDOW_SIZE][COLUMNAS].values
+        ventana = df.iloc[i:i+WINDOW_SIZE][cols].values
         datos_totales.append(ventana)
         etiquetas_totales.append(etiqueta)
+        ventanas_creadas += 1
 
+    print(f"   → Ventanas creadas: {ventanas_creadas}")
 
+# Convertir a arrays
 X = np.array(datos_totales, dtype=np.float32)
 y = np.array(etiquetas_totales, dtype=np.int32)
 
+print(f"\n📊 Datos preparados:")
+print(f"   Total de ventanas: {len(X)}")
+print(f"   Forma de X: {X.shape}")
+print(f"   Distribución de clases:")
 unique, counts = np.unique(y, return_counts=True)
 for clase, count in zip(unique, counts):
     nombre = "Normal" if clase == 0 else "Caída"
+    print(f"      {nombre}: {count} ventanas ({count/len(y)*100:.1f}%)")
 
-#Train test y split
+# --- 2. TRAIN/TEST SPLIT ---
+print(f"\n✂️ Dividiendo datos (test={TEST_SIZE*100:.0f}%)...")
 X_train, X_test, y_train, y_test = train_test_split(
     X, y, test_size=TEST_SIZE, random_state=42, stratify=y
 )
+print(f"   Train: {len(X_train)} ventanas")
+print(f"   Test: {len(X_test)} ventanas")
 
-#Modelo CNN 
+# --- 3. CREAR MODELO CNN SIMPLIFICADO ---
+# Detectar número de features automáticamente
+num_features = X.shape[2]  # Puede ser 6 o 12
+print(f"\n🧠 Creando modelo CNN 1D para {num_features} features...")
+print("   Modelo simplificado (menos parámetros, más regularización)\n")
+
 model = Sequential([
-    Conv1D(32, 3, activation='relu', padding='same', input_shape=(WINDOW_SIZE, 12)),
+    Conv1D(32, 3, activation='relu', padding='same', input_shape=(WINDOW_SIZE, num_features)),
     MaxPooling1D(2),
     
     Conv1D(64, 3, activation='relu', padding='same'),
@@ -84,7 +128,14 @@ model = Sequential([
 model.compile(optimizer='adam', loss='binary_crossentropy', metrics=['accuracy'])
 model.summary()
 
-#Entrenar modelo
+# --- 4. ENTRENAR ---
+print("\n🚀 Entrenando modelo...")
+print("💡 Modelo simplificado para reducir overfitting:")
+print("   - Solo 1 capa Conv1D (en vez de 2)")
+print("   - 16 filtros (en vez de 32+64)")
+print("   - Dense de 32 neuronas (en vez de 64)")
+print("   - Dropout aumentado a 0.5\n")
+
 early_stop = EarlyStopping(monitor='val_loss', patience=15, restore_best_weights=True)
 
 history = model.fit(
@@ -96,9 +147,10 @@ history = model.fit(
     verbose=1
 )
 
-
+# --- 5. EVALUAR ---
+print("\n📈 Evaluando modelo...")
 loss, acc = model.evaluate(X_test, y_test)
-print(f"\n Pérdida: {loss:.4f} | Precisión: {acc:.4f}")
+print(f"\n✅ Pérdida: {loss:.4f} | Precisión: {acc:.4f}")
 
 # Predicciones
 y_pred = (model.predict(X_test) > 0.5).astype(int)
@@ -120,40 +172,13 @@ print("💾 Matriz guardada: matriz_confusion_arduino.png")
 print("\n📋 Reporte de clasificación:")
 print(classification_report(y_test, y_pred, target_names=['Normal', 'Caída']))
 
-#Guardar modelo
+# --- 6. GUARDAR MODELO ---
 MODEL_PATH = "modelo_cnn_imu.h5"
 model.save(MODEL_PATH)
 print(f"\n💾 Modelo guardado: {MODEL_PATH}")
 
-#distribucion de clases
-unique, counts = np.unique(y, return_counts=True)
-plt.figure(figsize=(6,4))
-sns.barplot(x=['Normal', 'Caída'], y=counts)
-plt.title("Distribución de Clases")
-plt.ylabel("Cantidad de ventanas")
-plt.tight_layout()
-plt.savefig("class_distribution.png", dpi=150)
-print("💾 Imagen guardada: class_distribution.png")
-
-
-#matriz de confusion
-cm = confusion_matrix(y_test, y_pred)
-plt.figure(figsize=(6,5))
-sns.heatmap(cm, annot=True, fmt='d', cmap='Blues',
-            xticklabels=['Normal', 'Caída'],
-            yticklabels=['Normal', 'Caída'])
-plt.xlabel("Predicción")
-plt.ylabel("Real")
-plt.title("Matriz de Confusión")
-plt.tight_layout()
-plt.savefig("confusion_matrix.png", dpi=150)
-print("💾 Imagen guardada: confusion_matrix.png")
-
-
-#Grafico entrenamiento
+# Gráfico de entrenamiento
 plt.figure(figsize=(12,4))
-
-# Loss
 plt.subplot(1,2,1)
 plt.plot(history.history['loss'], label='Train')
 plt.plot(history.history['val_loss'], label='Val')
@@ -163,7 +188,6 @@ plt.ylabel('Loss')
 plt.legend()
 plt.grid(True)
 
-# Accuracy
 plt.subplot(1,2,2)
 plt.plot(history.history['accuracy'], label='Train')
 plt.plot(history.history['val_accuracy'], label='Val')
@@ -174,16 +198,7 @@ plt.legend()
 plt.grid(True)
 
 plt.tight_layout()
-plt.savefig("training_metrics.png", dpi=150)
-print("💾 Imagen guardada: training_metrics.png")
+plt.savefig('entrenamiento_arduino.png', dpi=150)
+print(f"💾 Gráfico guardado: entrenamiento_arduino.png")
 
-#Grafico de modelo
-from tensorflow.keras.utils import plot_model
-
-plot_model(
-    model,
-    to_file="arquitectura_cnn.png",
-    show_shapes=True,
-    show_layer_names=True,
-    dpi=140
-)
+print("\n✅ ¡Entrenamiento completado!")
