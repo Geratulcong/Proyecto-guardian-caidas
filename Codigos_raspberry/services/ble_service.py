@@ -4,13 +4,16 @@ from bleak import BleakClient
 import asyncio
 import json
 
-
 DEVICE_NAME = "Sensor-Cadera"
 
 CHARACTERISTIC_UUID = "19b10001-0000-1000-8000-00805f9b34fb"
 
 
 class BLEService:
+
+    def __init__(self):
+
+        self.client = None
 
     async def notification_handler(self, sender, data):
 
@@ -35,6 +38,7 @@ class BLEService:
         for device in devices:
 
             if device.name == DEVICE_NAME:
+
                 target = device
                 break
 
@@ -45,15 +49,25 @@ class BLEService:
 
         print(f"Conectando a {target.address}")
 
-        async with BleakClient(target.address) as client:
+        self.client = BleakClient(target.address)
 
-            print("BLE conectado")
+        await self.client.connect()
 
-            await client.start_notify(
-                CHARACTERISTIC_UUID,
-                self.notification_handler
-            )
+        print("BLE conectado")
 
-            while True:
+        await self.client.start_notify(
+            CHARACTERISTIC_UUID,
+            self.notification_handler
+        )
 
-                await asyncio.sleep(1)
+        while True:
+
+            await asyncio.sleep(1)
+
+    async def desconectar(self):
+
+        if self.client and self.client.is_connected:
+
+            await self.client.disconnect()
+
+            print("BLE desconectado")
