@@ -1,19 +1,26 @@
+import joblib
 import numpy as np
-from tensorflow.keras.models import load_model
 
 
 class MLService:
 
     def __init__(self):
 
-        self.model = load_model("ml/model.h5")
+        self.model = joblib.load("ml/model.pkl")
 
-    def detectar_caida(self, ventana):
+    def detectar_caida(self, datos_sensor):
 
-        datos = np.array(ventana)
-
-        datos = datos.reshape(1, 100, 6)
+        datos = np.array([
+            [
+                datos_sensor["ax"],
+                datos_sensor["ay"],
+                datos_sensor["az"],
+                datos_sensor["gx"],
+                datos_sensor["gy"],
+                datos_sensor["gz"]
+            ]
+        ])
 
         prediccion = self.model.predict(datos)
 
-        return prediccion
+        return prediccion[0]
