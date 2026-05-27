@@ -6,7 +6,7 @@ try:
         host="192.168.1.7",
         port=3306,
         user="raspberry",
-        password="1234",
+        password="admin",
         database="detector_caidas"
     )
 
