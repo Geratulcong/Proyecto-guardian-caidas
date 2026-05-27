@@ -19,17 +19,17 @@ void setup() {
   
   // Inicializar BLE
   if (!BLE.begin()) {
-    Serial.println("❌ Error iniciando BLE");
+    Serial.println("Error iniciando BLE");
     while(1);
   }
   
   // Inicializar IMU
   if (!IMU.begin()) {
-    Serial.println("❌ Error iniciando IMU");
+    Serial.println("Error iniciando IMU");
     while(1);
   }
 
-  Serial.println("✅ BLE e IMU iniciados correctamente");
+  Serial.println("BLE e IMU iniciados correctamente");
   
   // Configurar BLE con nombre único para CADERA
   BLE.setLocalName("Sensor-Cadera");
@@ -40,14 +40,14 @@ void setup() {
   sensorCharacteristic.writeValue("Sensor Cadera - Esperando conexión...");
   
   BLE.advertise();
-  Serial.println("📡 Sensor CADERA - Esperando conexión BLE...");
+  Serial.println("Sensor CADERA - Esperando conexión BLE...");
 }
 
 void loop() {
   BLEDevice central = BLE.central();
 
   if (central) {
-    Serial.print("✅ CADERA conectado a: ");
+    Serial.print("CADERA conectado a: ");
     Serial.println(central.address());
 
     while (central.connected()) {
@@ -75,7 +75,7 @@ void loop() {
       delay(50);
     }
 
-    Serial.print("❌ CADERA desconectado de: ");
+    Serial.print("CADERA desconectado de: ");
     Serial.println(central.address());
   }
 }
