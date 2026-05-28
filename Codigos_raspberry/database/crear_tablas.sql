@@ -3,7 +3,9 @@ CREATE TABLE Usuario (
     usuario_nombre VARCHAR(80) NOT NULL,
     usuario_email VARCHAR(120) NOT NULL,
     usuario_telefono VARCHAR(20),
-    usuario_activo BOOLEAN
+    usuario_activo BOOLEAN,
+    usuario_familiar_nombre VARCHAR(80) NOT NULL,
+    usuario_familiar_telefono VARCHAR(20)
 );
 
 CREATE TABLE Raspberry_PI (
@@ -54,7 +56,7 @@ CREATE TABLE Evento_Caida (
     evento_id CHAR(36) PRIMARY KEY,
     raspberry_id CHAR(36) NOT NULL,
     evento_detectado_en TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    evento_confirmado BOOLEAN,
+    evento_tipo VARCHAR(50),
 
     FOREIGN KEY (raspberry_id)
     REFERENCES Raspberry_PI(raspberry_id)
