@@ -7,12 +7,12 @@ class EventoCaida:
         self,
         evento_id: UUID,
         raspberry_id: UUID,
-        evento_confirmado: bool
+        evento_tipo: str
     ):
 
         self.evento_id = evento_id
         self.raspberry_id = raspberry_id
-        self.evento_confirmado = evento_confirmado
+        self.evento_tipo = evento_tipo
 
     def detectar_caida(self):
         print("Caída detectada")

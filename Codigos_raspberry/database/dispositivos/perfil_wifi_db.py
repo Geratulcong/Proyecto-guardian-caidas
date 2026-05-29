@@ -8,7 +8,6 @@ class PerfilWifiDB:
         perfil_id,
         raspberry_id,
         perfil_ssid,
-        perfil_contrasena,
         perfil_seguridad
     ):
 
@@ -21,17 +20,15 @@ class PerfilWifiDB:
             perfil_id,
             raspberry_id,
             perfil_ssid,
-            perfil_contrasena,
             perfil_seguridad
         )
-        VALUES (?, ?, ?, ?, ?)
+        VALUES (?, ?, ?, ?)
         """
 
         cursor.execute(sql, (
             perfil_id,
             raspberry_id,
             perfil_ssid,
-            perfil_contrasena,
             perfil_seguridad
         ))
 
