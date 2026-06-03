@@ -44,6 +44,7 @@ CREATE TABLE Perfil_Wifi (
     raspberry_id CHAR(36) NOT NULL,
     perfil_ssid VARCHAR(100) NOT NULL,
     perfil_seguridad VARCHAR(50),
+    perfil_estado BOOLEAN,
 
     FOREIGN KEY (raspberry_id)
     REFERENCES Raspberry_PI(raspberry_id)
