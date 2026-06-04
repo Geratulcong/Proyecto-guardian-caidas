@@ -1,351 +1,501 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>App Emergencia</title>
-<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>App de Emergencia</title>
 
-<style>
-*{margin:0;padding:0;box-sizing:border-box}
-body{background:#f4f7fb;font-family:Arial,sans-serif}
+  <link
+    href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
+    rel="stylesheet"
+  />
 
-.navbar-custom{
-background:#fff;
-padding:15px 30px;
-display:flex;
-justify-content:space-between;
-align-items:center;
-box-shadow:0 2px 10px rgba(0,0,0,.08);
-position:sticky;
-top:0;
-z-index:1000;
-}
+  <style>
+    body {
+      background-color: #f8f9fa;
+    }
 
-.logo{font-size:28px;font-weight:bold;color:#0d6efd}
+    .app-wrapper {
+      display: flex;
+      min-height: 100vh;
+    }
 
-.nav-links button{
-border:none;
-background:#eef2f7;
-padding:10px 18px;
-border-radius:12px;
-margin-left:10px;
-font-weight:bold;
-}
+    .sidebar {
+      width: 220px;
+      background: #212529;
+      color: white;
+      padding: 20px;
+      position: fixed;
+      left: 0;
+      top: 0;
+      height: 100%;
+    }
 
-.nav-links button:hover{
-background:#0d6efd;
-color:white;
-}
+    .sidebar button {
+      width: 100%;
+      margin-bottom: 10px;
+    }
 
-.main-container{padding:30px}
+    .content {
+      flex: 1;
+      margin-left: 220px;
+      padding: 20px;
+    }
 
-.vista{display:none}
-.vista.activa{display:block}
+    .container-box {
+      max-width: 450px;
+      margin: auto;
+      margin-top: 40px;
+    }
 
-.hero{
-background:linear-gradient(135deg,#0d6efd,#4da3ff);
-color:white;
-border-radius:30px;
-padding:40px;
-display:flex;
-justify-content:space-between;
-gap:20px;
-margin-bottom:25px;
-}
+    .btn-emergency {
+      font-size: 20px;
+      padding: 20px;
+    }
 
-.status-card{
-background:white;
-color:black;
-padding:20px;
-border-radius:20px;
-min-width:300px;
-}
+    .vista {
+      display: none;
+    }
 
-.dashboard-grid{
-display:grid;
-grid-template-columns:repeat(auto-fit,minmax(350px,1fr));
-gap:20px;
-}
+    .vista.activa {
+      display: block;
+    }
 
-.dashboard-card{
-background:white;
-padding:25px;
-border-radius:25px;
-box-shadow:0 4px 10px rgba(0,0,0,.08);
-}
-
-.contact-card{
-background:#f8f9fa;
-padding:20px;
-border-radius:15px;
-margin-bottom:15px;
-}
-
-.device-item{
-background:#f8f9fa;
-padding:15px;
-border-radius:12px;
-margin-top:10px;
-}
-
-.btn-add{
-position:fixed;
-right:25px;
-bottom:25px;
-width:65px;
-height:65px;
-border:none;
-border-radius:50%;
-font-size:32px;
-background:#0d6efd;
-color:white;
-display:none;
-}
-
-@media(max-width:768px){
-.hero{flex-direction:column}
-.navbar-custom{flex-direction:column;gap:10px}
-.nav-links{display:grid;grid-template-columns:1fr 1fr 1fr;width:100%}
-.nav-links button{margin:0}
-.main-container{padding:15px}
-}
-</style>
+    .btn-add {
+      width: 60px;
+      height: 60px;
+      border-radius: 50%;
+      font-size: 30px;
+      position: fixed;
+      bottom: 30px;
+      right: 30px;
+      z-index: 1000;
+    }
+  </style>
 </head>
+
 <body>
 
-<div class="navbar-custom">
-<div class="logo">App Emergencia</div>
+<div class="app-wrapper">
 
-<div class="nav-links">
-<button onclick="mostrarVista('inicio')">Inicio</button>
-<button onclick="mostrarVista('contactos')">Contactos</button>
-<button onclick="mostrarVista('ble')">BLE</button>
+  <!-- CONTENIDO -->
+  <div class="content">
+
+    <!-- HOME -->
+    <div id="home" class="vista activa">
+
+      <div class="container-box text-center">
+
+        <h2 class="mb-4">🚨 App de Emergencia</h2>
+
+        <div class="card p-3 mb-4">
+
+          <input
+            id="nombre"
+            class="form-control mb-2"
+            placeholder="Nombre"
+          >
+
+          <input
+            id="ubicacion"
+            class="form-control mb-2"
+            placeholder="Ubicación (auto)"
+          >
+
+          <textarea
+            id="mensaje"
+            class="form-control"
+            placeholder="Mensaje"
+          ></textarea>
+
+        </div>
+
+        <button
+          class="btn btn-secondary w-100 mb-2"
+          onclick="obtenerUbicacion()"
+        >
+          Obtener ubicación 📍
+        </button>
+
+        <button
+          class="btn btn-danger w-100 mb-3 btn-emergency"
+          onclick="enviarSMS()"
+        >
+          Enviar Emergencia 📩
+        </button>
+
+        <a
+          href="tel:+569XXXXXXXX"
+          class="btn btn-success w-100 btn-emergency"
+        >
+          Llamar 📞
+        </a>
+
+      </div>
+
+    </div>
+
+    <!-- CONTACTOS -->
+    <div id="Contactos de emergencia" class="vista">
+
+      <div class="container-box">
+
+        <h3>📞 Contactos de emergencia</h3>
+
+        <!-- CONTENEDOR DINÁMICO -->
+        <div id="contenedorContactos">
+
+          <!-- CONTACTO INICIAL -->
+          <div class="card p-3 mb-3 contacto-card">
+
+            <h5>Contacto 1</h5>
+
+            <input
+              class="form-control mb-2 nombre"
+              placeholder="Nombre"
+            >
+
+            <input
+              class="form-control mb-2 apellido"
+              placeholder="Apellido"
+            >
+
+            <input
+              class="form-control numero"
+              placeholder="Número (+569XXXXXXXX)"
+            >
+
+          </div>
+
+        </div>
+
+        <!-- BOTÓN GUARDAR -->
+        <button
+          class="btn btn-success w-100 mt-3"
+          onclick="guardarContactos()"
+        >
+          Guardar contactos 💾
+        </button>
+
+        <!-- BOTÓN + -->
+        <button
+          onclick="agregarContacto()"
+          class="btn btn-primary btn-add"
+        >
+          +
+        </button>
+
+      </div>
+
+    </div>
+
+    <!-- CONEXIÓN BLE -->
+    <div id="Conexión BLE" class="vista">
+
+      <div class="container-box">
+
+        <h3 class="mb-4">📶 Conexión BLE</h3>
+
+        <!-- ESTADO -->
+        <div class="card p-3 mb-3">
+
+          <h5>Estado del dispositivo</h5>
+
+          <p id="estadoBLE" class="mb-2">
+            ❌ No conectado
+          </p>
+
+          <p id="nombreDispositivo" class="mb-0">
+            Dispositivo: Ninguno
+          </p>
+
+        </div>
+
+        <!-- BOTÓN BUSCAR -->
+        <button
+          class="btn btn-primary w-100 mb-3"
+          onclick="conectarBLE()"
+        >
+          Buscar dispositivos BLE 🔍
+        </button>
+
+        <!-- LISTA -->
+        <div class="card p-3">
+
+          <h5>Dispositivos encontrados</h5>
+
+          <ul id="listaDispositivos" class="list-group">
+
+            <li class="list-group-item">
+              Ningún dispositivo conectado
+            </li>
+
+          </ul>
+
+        </div>
+
+      </div>
+
+    </div>
+
+    <!-- SERVICIOS -->
+    <div id="Servicios de emergencia" class="vista">
+
+      <div class="container-box">
+
+        <h3>🚑 Servicios de emergencia</h3>
+
+
+        <a
+          href="tel:133"
+          class="btn btn-primary w-100 mb-2"
+        >
+          🚓 Carabineros
+        </a>
+
+        <a
+          href="tel:131"
+          class="btn btn-success w-100 mb-2"
+        >
+          🚑 Ambulancia
+        </a>
+
+        <a
+          href="tel:132"
+          class="btn btn-danger w-100"
+        >
+          🚒 Bomberos
+        </a>
+
+      </div>
+
+    </div>
+
+  </div>
+
+  <!-- SIDEBAR -->
+  <div class="sidebar">
+
+    <h4>Menú</h4>
+
+    <button
+      class="btn btn-light"
+      onclick="mostrarVista('home')"
+    >
+      Inicio
+    </button>
+
+    <button
+      class="btn btn-light"
+      onclick="mostrarVista('Contactos de emergencia')"
+    >
+      Contactos
+    </button>
+
+    <button
+      class="btn btn-light"
+      onclick="mostrarVista('Conexión BLE')"
+    >
+      Conexión BLE
+    </button>
+
+    <button
+      class="btn btn-light"
+      onclick="mostrarVista('Servicios de emergencia')"
+    >
+      Servicios
+    </button>
+
+  </div>
+
 </div>
-</div>
-
-<div class="main-container">
-
-<div id="inicio" class="vista activa">
-
-<div class="hero">
-
-<div>
-<h1>Envía alertas en segundos</h1>
-<p>Sistema BLE y monitoreo para Raspberry Pi.</p>
-
-<button class="btn btn-light mt-3" onclick="obtenerUbicacion()">Obtener ubicación</button>
-<button class="btn btn-danger mt-3" onclick="enviarSMS()">Enviar SMS</button>
-</div>
-
-<div class="status-card">
-<h4>Estado BLE</h4>
-<p id="estadoBLE">❌ No conectado</p>
-<p id="nombreDispositivo">Dispositivo: Ninguno</p>
-</div>
-</div>
-
-<div class="dashboard-grid">
-
-<div class="dashboard-card">
-<h3>Mensaje Emergencia</h3>
-<input id="nombre" class="form-control mb-3" placeholder="Nombre">
-<textarea id="mensaje" rows="6" class="form-control" placeholder="Mensaje"></textarea>
-</div>
-
-<div class="dashboard-card">
-
-<h3>Ubicación Actual</h3>
-
-<textarea
-id="ubicacion"
-class="form-control"
-rows="6"
-placeholder="Presione 'Obtener ubicación' para mostrar la dirección actual."
-readonly>
-</textarea>
-
-</div>
-
-
-
-<div class="dashboard-card">
-<h3>Estado Sistema</h3>
-<div class="device-item">Raspberry Pi: Online ✅</div>
-<div class="device-item">BLE: Disponible</div>
-<div class="device-item">GPS: Disponible</div>
-<div class="device-item">SMS: Disponible</div>
-</div>
-
-</div>
-
-</div>
-
-<div id="contactos" class="vista">
-
-<div class="dashboard-card">
-<h2>Contactos de Emergencia</h2>
-
-<div id="contenedorContactos">
-
-<div class="contact-card contacto-card">
-<h5>Contacto 1</h5>
-<input class="form-control mb-2 nombre" placeholder="Nombre">
-<input class="form-control mb-2 apellido" placeholder="Apellido">
-<input class="form-control numero" placeholder="+569XXXXXXXX">
-</div>
-
-</div>
-
-<button class="btn btn-primary mt-3" onclick="guardarContactos()">
-Guardar contactos
-</button>
-
-</div>
-
-</div>
-
-<div id="ble" class="vista">
-
-<div class="dashboard-card">
-
-<h2>Conexión BLE</h2>
-
-<button class="btn btn-primary w-100 mb-3" onclick="conectarBLE()">
-Buscar dispositivos BLE
-</button>
-
-<div id="listaDispositivos">
-<div class="device-item">Ningún dispositivo conectado</div>
-</div>
-
-</div>
-
-</div>
-
-</div>
-
-<button id="btnAgregarContacto" class="btn-add" onclick="agregarContacto()">+</button>
 
 <script>
-function mostrarVista(id){
-document.querySelectorAll('.vista').forEach(v=>v.classList.remove('activa'));
-document.getElementById(id).classList.add('activa');
-const boton=document.getElementById('btnAgregarContacto');
-boton.style.display=(id==='contactos')?'block':'none';
-}
 
-function agregarContacto(){
-const cont=document.getElementById('contenedorContactos');
-const n=document.querySelectorAll('.contacto-card').length+1;
-const div=document.createElement('div');
-div.className='contact-card contacto-card';
-div.innerHTML=`
-<h5>Contacto ${n}</h5>
-<input class="form-control mb-2 nombre" placeholder="Nombre">
-<input class="form-control mb-2 apellido" placeholder="Apellido">
-<input class="form-control numero" placeholder="+569XXXXXXXX">
-`;
-cont.appendChild(div);
-}
+  // CAMBIAR VISTAS
+  function mostrarVista(id) {
 
-function guardarContactos(){
-const contactos=[];
-document.querySelectorAll('.contacto-card').forEach(c=>{
-contactos.push({
-nombre:c.querySelector('.nombre').value,
-apellido:c.querySelector('.apellido').value,
-numero:c.querySelector('.numero').value
-});
-});
-localStorage.setItem('contactos',JSON.stringify(contactos));
-alert('Contactos guardados');
-}
+    document
+      .querySelectorAll('.vista')
+      .forEach(v => v.classList.remove('activa'));
 
-async function obtenerUbicacion(){
-
-  if(!navigator.geolocation){
-    alert("Tu navegador no soporta geolocalización");
-    return;
+    document
+      .getElementById(id)
+      .classList.add('activa');
   }
 
-  navigator.geolocation.getCurrentPosition(
+  // AGREGAR CONTACTO
+  function agregarContacto() {
 
-    async function(pos){
+    const contenedor =
+      document.getElementById('contenedorContactos');
 
-      const lat = pos.coords.latitude;
-      const lon = pos.coords.longitude;
+    const total =
+      document.querySelectorAll('.contacto-card').length + 1;
 
-      try{
+    const nuevo = document.createElement('div');
 
-        document.getElementById("ubicacion").value =
-          "Obteniendo dirección...";
+    nuevo.className =
+      'card p-3 mb-3 contacto-card';
 
-        const respuesta = await fetch(
-          `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}`
+    nuevo.innerHTML = `
+      <h5>Contacto ${total}</h5>
+
+      <input
+        class="form-control mb-2 nombre"
+        placeholder="Nombre"
+      >
+
+      <input
+        class="form-control mb-2 apellido"
+        placeholder="Apellido"
+      >
+
+      <input
+        class="form-control numero"
+        placeholder="Número (+569XXXXXXXX)"
+      >
+    `;
+
+    contenedor.appendChild(nuevo);
+  }
+
+  // GUARDAR CONTACTOS
+  function guardarContactos() {
+
+    const tarjetas =
+      document.querySelectorAll('.contacto-card');
+
+    const contactos = [];
+
+    tarjetas.forEach(card => {
+
+      const nombre =
+        card.querySelector('.nombre').value;
+
+      const apellido =
+        card.querySelector('.apellido').value;
+
+      const numero =
+        card.querySelector('.numero').value;
+
+      if (numero.trim() !== '') {
+
+        contactos.push({
+          nombre,
+          apellido,
+          numero
+        });
+
+      }
+
+    });
+
+    localStorage.setItem(
+      'contactos',
+      JSON.stringify(contactos)
+    );
+
+    alert('✅ Contactos guardados correctamente');
+  }
+
+  // ENVIAR SMS
+  function enviarSMS() {
+
+    const contactos =
+      JSON.parse(localStorage.getItem('contactos')) || [];
+
+    const ubicacion =
+      document.getElementById('ubicacion').value;
+
+    const mensaje =
+      document.getElementById('mensaje').value;
+
+    const texto =
+      `Emergencia!\nUbicación: ${ubicacion}\nMensaje: ${mensaje}`;
+
+    contactos.forEach(contacto => {
+
+      if (contacto.numero) {
+
+        window.open(
+          `sms:${contacto.numero}?body=${encodeURIComponent(texto)}`,
+          '_blank'
         );
 
-        const datos = await respuesta.json();
-
-        document.getElementById("ubicacion").value =
-          datos.display_name;
-
-      }
-      catch(error){
-
-        document.getElementById("ubicacion").value =
-          `${lat}, ${lon}`;
-
-        alert(
-          "No fue posible obtener la dirección exacta. Se mostrarán las coordenadas."
-        );
-
       }
 
-    },
+    });
 
-    function(error){
+  }
 
-      switch(error.code){
+  // UBICACIÓN
+  function obtenerUbicacion() {
 
-        case error.PERMISSION_DENIED:
-          alert("Debes permitir el acceso a la ubicación.");
-          break;
+    navigator.geolocation.getCurrentPosition(pos => {
 
-        case error.POSITION_UNAVAILABLE:
-          alert("La ubicación no está disponible.");
-          break;
+      const coords =
+        pos.coords.latitude + ',' +
+        pos.coords.longitude;
 
-        case error.TIMEOUT:
-          alert("Se agotó el tiempo para obtener la ubicación.");
-          break;
+      document.getElementById('ubicacion').value =
+        coords;
 
-        default:
-          alert("Error al obtener la ubicación.");
-      }
+    });
+
+  }
+
+  // ALERTA TOTAL
+  function alertaTotal() {
+
+    enviarSMS();
+
+    alert('🚨 Mensajes preparados para enviar');
+
+  }
+
+  // BLE
+  let dispositivoBLE = null;
+
+  async function conectarBLE() {
+
+    try {
+
+      const device =
+        await navigator.bluetooth.requestDevice({
+
+          acceptAllDevices: true,
+          optionalServices: []
+
+        });
+
+      dispositivoBLE = device;
+
+      document.getElementById('estadoBLE').innerHTML =
+        '✅ Conectado correctamente';
+
+      document.getElementById('nombreDispositivo').innerHTML =
+        'Dispositivo: ' + (device.name || 'Sin nombre');
+
+      const lista =
+        document.getElementById('listaDispositivos');
+
+      lista.innerHTML += `
+        <li class="list-group-item">
+          📱 ${device.name || 'Dispositivo desconocido'}
+        </li>
+      `;
+
+    } catch(error) {
+
+      console.log(error);
+
+      alert('❌ No se pudo conectar al dispositivo BLE');
 
     }
 
-  );
+  }
 
-}
-
-async function conectarBLE(){
-try{
-const device=await navigator.bluetooth.requestDevice({
-acceptAllDevices:true
-});
-
-document.getElementById('estadoBLE').innerHTML='✅ Conectado';
-document.getElementById('nombreDispositivo').innerHTML='Dispositivo: ' + (device.name || 'Sin nombre');
-
-document.getElementById('listaDispositivos').innerHTML +=
-`<div class="device-item">${device.name || 'Dispositivo desconocido'}</div>`;
-
-}catch(e){
-alert('No se pudo conectar');
-}
-}
 </script>
 
 </body>

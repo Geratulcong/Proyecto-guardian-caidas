@@ -1,15 +1,11 @@
 import asyncio
 from uuid import UUID
-import sys
-from pathlib import Path
-
-sys.path.insert(0, str(Path(__file__).parent))
 
 from models.raspberry_pi import RaspberryPi, EstadoOperacion
 from services.connectivity_service import ConnectivityService
 from services.ble_service import BLEService
 from database.dispositivos.raspberry_db import RaspberryDB
-
+from database.dispositivos.connection import get_connection
 
 # ID del Raspberry Pi (obtener de configuración, variable de entorno, etc.)
 RASPBERRY_ID = "12345678-1234-1234-1234-123456789012"  # Cambiar por el ID real
