@@ -22,10 +22,14 @@ async def main():
     
     # Obtener Raspberry de la BD
     datos = raspberry_db.obtener_raspberry(RASPBERRY_ID)
-    
+
     if not datos:
-        print(f"Raspberry {RASPBERRY_ID} no encontrado en BD")
-        return
+
+        print(f"Registrando Raspberry {RASPBERRY_ID}")
+
+        raspberry_db.crear_raspberry(RASPBERRY_ID)
+
+        datos = raspberry_db.obtener_raspberry(RASPBERRY_ID)
     
     # Crear instancia con datos de la BD
     raspberry = RaspberryPi(

@@ -54,6 +54,31 @@ class RaspberryDB:
             raspberry_id
         ))
 
+    def crear_raspberry(self, raspberry_id):
+        conn = get_connection()
+
+        cursor = conn.cursor()
+
+        sql = """
+        INSERT INTO Raspberry_PI (
+            raspberry_id,
+            usuario_id,
+            raspberry_estado_arduino,
+            raspberry_estado_pagina_web,
+            raspberry_nivel_bateria
+        )
+        VALUES (?, ?, ?, ?, ?)
+        """
+
+        cursor.execute(sql, (
+            raspberry_id,
+            None,
+            "Desconectado",
+            "Desconectado",
+            100
+        ))
+
+
         conn.commit()
 
         conn.close()
