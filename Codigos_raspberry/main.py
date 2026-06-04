@@ -6,9 +6,11 @@ from services.connectivity_service import ConnectivityService
 from services.ble_service import BLEService
 from database.dispositivos.raspberry_db import RaspberryDB
 from database.dispositivos.connection import get_connection
+from services.raspberry_service import RaspberryService
 
 # ID del Raspberry Pi (obtener de configuración, variable de entorno, etc.)
-RASPBERRY_ID = "12345678-1234-1234-1234-123456789012"  # Cambiar por el ID real
+RASPBERRY_ID = RaspberryService.obtener_id()
+print(f"Serial Raspberry: {RASPBERRY_ID}")
 
 ble_service = BLEService()
 connectivity_service = ConnectivityService()

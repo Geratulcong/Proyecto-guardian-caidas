@@ -10,7 +10,7 @@ CREATE TABLE Usuario (
 
 CREATE TABLE Raspberry_PI (
     raspberry_id CHAR(36) PRIMARY KEY,
-    usuario_id CHAR(36) NOT NULL,
+    usuario_id CHAR(36),
     raspberry_estado_arduino VARCHAR(20),
     raspberry_estado_pagina_web VARCHAR(20),
     raspberry_nivel_bateria DECIMAL(5,2),
@@ -32,7 +32,7 @@ CREATE TABLE Contacto_Emergencia (
 
 CREATE TABLE Arduino (
     arduino_id CHAR(36) PRIMARY KEY,
-    raspberry_id CHAR(36) NOT NULL,
+    raspberry_id CHAR(36),
     arduino_estado VARCHAR(20),
 
     FOREIGN KEY (raspberry_id)
@@ -41,7 +41,7 @@ CREATE TABLE Arduino (
 
 CREATE TABLE Perfil_Wifi (
     perfil_id CHAR(36) PRIMARY KEY,
-    raspberry_id CHAR(36) NOT NULL,
+    raspberry_id CHAR(36),
     perfil_ssid VARCHAR(100) NOT NULL,
     perfil_seguridad VARCHAR(50),
     perfil_estado BOOLEAN,
@@ -52,7 +52,7 @@ CREATE TABLE Perfil_Wifi (
 
 CREATE TABLE Evento_Caida (
     evento_id CHAR(36) PRIMARY KEY,
-    raspberry_id CHAR(36) NOT NULL,
+    raspberry_id CHAR(36),
     evento_detectado_en TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     evento_tipo VARCHAR(50),
 
@@ -62,7 +62,7 @@ CREATE TABLE Evento_Caida (
 
 CREATE TABLE Evento_Raspberry (
     evento_raspberry_id CHAR(36) PRIMARY KEY,
-    raspberry_id CHAR(36) NOT NULL,
+    raspberry_id CHAR(36),
     evento_tipo VARCHAR(50),
     evento_detectado_en TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
 
