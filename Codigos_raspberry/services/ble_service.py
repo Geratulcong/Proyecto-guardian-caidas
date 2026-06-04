@@ -95,3 +95,10 @@ class BLEService:
             print("Reintentando conexión...")
 
             await asyncio.sleep(5)
+
+    async def desconectar(self):
+        """Desconecta del dispositivo BLE"""
+        if self.client and self.client.is_connected:
+            await self.client.disconnect()
+            self.client = None
+            print("BLE desconectado")

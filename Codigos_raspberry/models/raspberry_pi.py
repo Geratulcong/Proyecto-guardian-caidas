@@ -1,4 +1,10 @@
 from uuid import UUID
+from enum import Enum
+
+
+class EstadoOperacion(Enum):
+    CONFIGURACION = "configuracion"
+    MONITOREO = "monitoreo"
 
 
 class RaspberryPi:
@@ -17,6 +23,11 @@ class RaspberryPi:
         self.raspberry_estado_arduino = raspberry_estado_arduino
         self.raspberry_estado_pagina_web = raspberry_estado_pagina_web
         self.raspberry_nivel_bateria = raspberry_nivel_bateria
+        self.estado_operacion = EstadoOperacion.CONFIGURACION
+
+    def cambiar_estado(self, nuevo_estado: EstadoOperacion):
+        self.estado_operacion = nuevo_estado
+        print(f"Estado: {nuevo_estado.value}")
 
     def conectar(self):
         print("Conectando BLE...")

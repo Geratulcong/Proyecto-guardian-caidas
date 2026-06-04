@@ -1,4 +1,21 @@
+import subprocess
+
+
 class ConnectivityService:
+
+    async def verificar_conexion(self) -> bool:
+        """Verifica si hay conexión WiFi"""
+        try:
+            # Intenta ping a Google DNS
+            result = subprocess.run(
+                ["ping", "-c", "1", "8.8.8.8"],
+                timeout=5,
+                capture_output=True
+            )
+            return result.returncode == 0
+        except Exception as e:
+            print(f"Error verificando conexión: {e}")
+            return False
 
     def monitorear_conectividad(self, client):
 
