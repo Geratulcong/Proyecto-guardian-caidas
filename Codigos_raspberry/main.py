@@ -1,67 +1,23 @@
 import asyncio
-from uuid import UUID
 
-from models.raspberry_pi import RaspberryPi, EstadoOperacion
-from services.connectivity_service import ConnectivityService
-from services.ble_service import BLEService
-from services.raspberry_service import RaspberryService
-from services.setup_ble_service import SetupBLEService
-from database.dispositivos.raspberry_db import RaspberryDB
+class WifiService:
 
+    async def conectar_wifi(self, ssid, password):
 
-RASPBERRY_ID = RaspberryService.obtener_id()
+        print(f"Conectando WiFi a {ssid}")
 
-print(f"Serial Raspberry: {RASPBERRY_ID}")
+        proceso = await asyncio.create_subprocess_exec(
+            "sudo", "nmcli", "device", "wifi", "connect", ssid, "password", password,
+            stdout=asyncio.subprocess.PIPE,
+            stderr=asyncio.subprocess.PIPE
+        )
 
-ble_service = BLEService()
-connectivity_service = ConnectivityService()
-raspberry_db = RaspberryDB()
+        stdout, stderr = await proceso.communicate()
 
+        if proceso.returncode == 0:
+            print("WiFi conectado correctamente")
+            return True
 
-async def main():
-
-    conectado = await connectivity_service.verificar_conexion()
-
-    if not conectado:
-
-        print("Sin WiFi. Iniciando configuración por BLE...")
-
-        setup = SetupBLEService()
-
-        wifi_configurado = await setup.iniciar()
-
-        if not wifi_configurado:
-
-            print("No se pudo configurar WiFi")
-            return
-
-    print("WiFi disponible. Conectando a BD...")
-
-    datos = raspberry_db.obtener_raspberry(RASPBERRY_ID)
-
-    if not datos:
-
-        print(f"Registrando Raspberry {RASPBERRY_ID}")
-
-        raspberry_db.crear_raspberry(RASPBERRY_ID)
-
-        datos = raspberry_db.obtener_raspberry(RASPBERRY_ID)
-
-    raspberry = RaspberryPi(
-        raspberry_id=datos[0],
-        usuario_id=UUID(datos[1]) if datos[1] else None,
-        raspberry_estado_arduino=datos[2],
-        raspberry_estado_pagina_web=datos[3],
-        raspberry_nivel_bateria=float(datos[4])
-    )
-
-    print(f"Raspberry cargado: {raspberry.raspberry_id}")
-
-    raspberry.cambiar_estado(EstadoOperacion.MONITOREO)
-
-    print("Iniciando BLE con Arduino...")
-
-    await ble_service.conectar()
-
-
-asyncio.run(main())
+        print("Error conectando WiFi")
+        print(stderr.decode())
+        return False
