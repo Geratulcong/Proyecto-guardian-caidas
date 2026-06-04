@@ -46,7 +46,7 @@ async def main():
     while True:
         # Verificar conexión WiFi
         conectado = False  #await connectivity_service.verificar_conexion()
-        
+        print(f"Conexión WiFi: {'Sí' if conectado else 'No'}")
         if conectado:
             # WiFi conectado → Cambiar a MONITOREO
             if raspberry.estado_operacion != EstadoOperacion.MONITOREO:
