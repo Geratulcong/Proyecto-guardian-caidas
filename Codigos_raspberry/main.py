@@ -1,5 +1,9 @@
 import asyncio
 from uuid import UUID
+import sys
+from pathlib import Path
+
+sys.path.insert(0, str(Path(__file__).parent))
 
 from models.raspberry_pi import RaspberryPi, EstadoOperacion
 from services.connectivity_service import ConnectivityService
