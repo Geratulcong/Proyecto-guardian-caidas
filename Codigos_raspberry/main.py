@@ -54,6 +54,7 @@ async def main():
                 print("Iniciando BLE...")
                 await ble_service.conectar()
         else:
+            print(EstadoOperacion.CONFIGURACION)
             if raspberry.estado_operacion != EstadoOperacion.CONFIGURACION:
                 raspberry.cambiar_estado(EstadoOperacion.CONFIGURACION)
                 print("Esperando configuración WiFi...")
