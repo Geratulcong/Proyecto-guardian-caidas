@@ -7,6 +7,7 @@ from services.ble_service import BLEService
 from database.dispositivos.raspberry_db import RaspberryDB
 from database.dispositivos.connection import get_connection
 from services.raspberry_service import RaspberryService
+from services.setup_ble_service import SetupBLEService
 
 # ID del Raspberry Pi (obtener de configuración, variable de entorno, etc.)
 RASPBERRY_ID = RaspberryService.obtener_id()
@@ -44,7 +45,7 @@ async def main():
     
     while True:
         # Verificar conexión WiFi
-        conectado = await connectivity_service.verificar_conexion()
+        conectado = False  #await connectivity_service.verificar_conexion()
         
         if conectado:
             # WiFi conectado → Cambiar a MONITOREO
@@ -53,11 +54,14 @@ async def main():
                 print("Iniciando BLE...")
                 await ble_service.conectar()
         else:
-            # WiFi desconectado → Cambiar a CONFIGURACION
             if raspberry.estado_operacion != EstadoOperacion.CONFIGURACION:
                 raspberry.cambiar_estado(EstadoOperacion.CONFIGURACION)
                 print("Esperando configuración WiFi...")
+
                 await ble_service.desconectar()
+
+                setup = SetupBLEService()
+                await setup.iniciar()
         
         await asyncio.sleep(5)
 
