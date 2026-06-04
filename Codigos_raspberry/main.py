@@ -33,7 +33,7 @@ async def main():
     
     # Crear instancia con datos de la BD
     raspberry = RaspberryPi(
-        raspberry_id=UUID(datos[0]),
+        raspberry_id=datos[0],
         usuario_id=UUID(datos[1]),
         raspberry_estado_arduino=datos[2],
         raspberry_estado_pagina_web=datos[3],
