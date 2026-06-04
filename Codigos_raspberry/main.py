@@ -4,13 +4,13 @@ from uuid import UUID
 from models.raspberry_pi import RaspberryPi, EstadoOperacion
 from services.connectivity_service import ConnectivityService
 from services.ble_service import BLEService
-from database.dispositivos.raspberry_db import RaspberryDB
-from database.dispositivos.connection import get_connection
 from services.raspberry_service import RaspberryService
 from services.setup_ble_service import SetupBLEService
+from database.dispositivos.raspberry_db import RaspberryDB
 
-# ID del Raspberry Pi (obtener de configuración, variable de entorno, etc.)
+
 RASPBERRY_ID = RaspberryService.obtener_id()
+
 print(f"Serial Raspberry: {RASPBERRY_ID}")
 
 ble_service = BLEService()
@@ -19,9 +19,24 @@ raspberry_db = RaspberryDB()
 
 
 async def main():
-    global raspberry
-    
-    # Obtener Raspberry de la BD
+
+    conectado = await connectivity_service.verificar_conexion()
+
+    if not conectado:
+
+        print("Sin WiFi. Iniciando configuración por BLE...")
+
+        setup = SetupBLEService()
+
+        wifi_configurado = await setup.iniciar()
+
+        if not wifi_configurado:
+
+            print("No se pudo configurar WiFi")
+            return
+
+    print("WiFi disponible. Conectando a BD...")
+
     datos = raspberry_db.obtener_raspberry(RASPBERRY_ID)
 
     if not datos:
@@ -31,8 +46,7 @@ async def main():
         raspberry_db.crear_raspberry(RASPBERRY_ID)
 
         datos = raspberry_db.obtener_raspberry(RASPBERRY_ID)
-    
-    # Crear instancia con datos de la BD
+
     raspberry = RaspberryPi(
         raspberry_id=datos[0],
         usuario_id=UUID(datos[1]) if datos[1] else None,
@@ -40,30 +54,14 @@ async def main():
         raspberry_estado_pagina_web=datos[3],
         raspberry_nivel_bateria=float(datos[4])
     )
-    
+
     print(f"Raspberry cargado: {raspberry.raspberry_id}")
-    
-    while True:
-        # Verificar conexión WiFi
-        conectado = False  #await connectivity_service.verificar_conexion()
-        print(f"Conexión WiFi: {'Sí' if conectado else 'No'}")
-        if conectado:
-            # WiFi conectado → Cambiar a MONITOREO
-            if raspberry.estado_operacion != EstadoOperacion.MONITOREO:
-                raspberry.cambiar_estado(EstadoOperacion.MONITOREO)
-                print("Iniciando BLE...")
-                await ble_service.conectar()
-        else:
-            print("Esperando configuración WiFi...")
-            if raspberry.estado_operacion != EstadoOperacion.CONFIGURACION:
-                raspberry.cambiar_estado(EstadoOperacion.CONFIGURACION)
 
-            await ble_service.desconectar()
+    raspberry.cambiar_estado(EstadoOperacion.MONITOREO)
 
-            setup = SetupBLEService()
-            await setup.iniciar()
-        
-        await asyncio.sleep(5)
+    print("Iniciando BLE con Arduino...")
+
+    await ble_service.conectar()
 
 
 asyncio.run(main())
