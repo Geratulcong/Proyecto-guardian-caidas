@@ -2,9 +2,11 @@ import asyncio
 import json
 
 from bless import BlessServer
-from bless.backends.characteristic import BlessGATTCharacteristic
-from bless.backends.service import BlessGATTService
 from bless import GATTCharacteristicProperties, GATTAttributePermissions
+
+from services.wifi_service import WifiService
+from services.raspberry_service import RaspberryService
+from database.dispositivos.perfil_wifi_db import PerfilWifiDB
 
 
 SERVICE_UUID = "12345678-1234-5678-1234-56789abcdef0"
@@ -16,6 +18,7 @@ class SetupBLEService:
     def __init__(self):
 
         self.configuracion_recibida = None
+        self.wifi_conectado = False
 
     def recibir_datos_wifi(self, characteristic, value, **kwargs):
 
@@ -63,6 +66,39 @@ class SetupBLEService:
 
         print("Configuración recibida correctamente")
 
+        ssid = self.configuracion_recibida.get("ssid")
+        password = self.configuracion_recibida.get("password")
+
+        wifi_service = WifiService()
+
+        conectado = await wifi_service.conectar_wifi(
+            ssid,
+            password
+        )
+
+        if conectado:
+
+            raspberry_id = RaspberryService.obtener_id()
+
+            perfil_wifi_db = PerfilWifiDB()
+
+            perfil_wifi_db.guardar_perfil(
+                raspberry_id=raspberry_id,
+                ssid=ssid,
+                seguridad="WPA2",
+                estado=True
+            )
+
+            print("Perfil WiFi guardado en BD")
+
+            self.wifi_conectado = True
+
+        else:
+
+            print("No se pudo conectar al WiFi. No se guarda perfil.")
+
+            self.wifi_conectado = False
+
         await server.stop()
 
-        return self.configuracion_recibida
+        return self.wifi_conectado

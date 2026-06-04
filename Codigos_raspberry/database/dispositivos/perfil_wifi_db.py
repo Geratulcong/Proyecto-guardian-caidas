@@ -1,37 +1,35 @@
+import uuid
+
 from database.dispositivos.connection import get_connection
 
 
 class PerfilWifiDB:
 
-    def guardar_perfil(
-        self,
-        perfil_id,
-        raspberry_id,
-        perfil_ssid,
-        perfil_seguridad
-    ):
+    def guardar_perfil(self, raspberry_id, ssid, seguridad="WPA2", estado=True):
 
         conn = get_connection()
-
         cursor = conn.cursor()
+
+        perfil_id = str(uuid.uuid4())
 
         sql = """
         INSERT INTO Perfil_Wifi (
             perfil_id,
             raspberry_id,
             perfil_ssid,
-            perfil_seguridad
+            perfil_seguridad,
+            perfil_estado
         )
-        VALUES (?, ?, ?, ?)
+        VALUES (?, ?, ?, ?, ?)
         """
 
         cursor.execute(sql, (
             perfil_id,
             raspberry_id,
-            perfil_ssid,
-            perfil_seguridad
+            ssid,
+            seguridad,
+            estado
         ))
 
         conn.commit()
-
         conn.close()
