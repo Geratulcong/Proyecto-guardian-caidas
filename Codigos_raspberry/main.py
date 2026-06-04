@@ -1,4 +1,5 @@
 import asyncio
+import threading
 from uuid import UUID
 
 from models.raspberry_pi import RaspberryPi, EstadoOperacion
@@ -8,6 +9,8 @@ from database.dispositivos.raspberry_db import RaspberryDB
 from database.dispositivos.connection import get_connection
 from services.raspberry_service import RaspberryService
 from services.setup_ble_service import SetupBLEService
+from api_wifi import iniciar_servidor
+
 
 # ID del Raspberry Pi (obtener de configuración, variable de entorno, etc.)
 RASPBERRY_ID = RaspberryService.obtener_id()
@@ -18,8 +21,18 @@ connectivity_service = ConnectivityService()
 raspberry_db = RaspberryDB()
 
 
+def iniciar_api_wifi():
+    """Inicia servidor WiFi en thread separado"""
+    thread = threading.Thread(target=iniciar_servidor, args=(5000,), daemon=True)
+    thread.start()
+    print("API WiFi iniciada en puerto 5000")
+
+
 async def main():
     global raspberry
+    
+    # Iniciar API WiFi en segundo plano
+    iniciar_api_wifi()
     
     # Obtener Raspberry de la BD
     datos = raspberry_db.obtener_raspberry(RASPBERRY_ID)

@@ -119,8 +119,7 @@ display:none;
 
 <div class="nav-links">
 <button onclick="mostrarVista('inicio')">Inicio</button>
-<button onclick="mostrarVista('contactos')">Contactos</button>
-<button onclick="mostrarVista('ble')">BLE</button>
+<button onclick="mostrarVista('contactos')">Contactos</button> <button onclick="mostrarVista('wifi')">WiFi</button><button onclick="mostrarVista('ble')">BLE</button>
 </div>
 </div>
 
@@ -205,7 +204,31 @@ Guardar contactos
 
 </div>
 
-<div id="ble" class="vista">
+ <div id="wifi" class="vista">
+
+ <div class="dashboard-card">
+
+ <h2>Configuración WiFi</h2>
+
+ <button class="btn btn-primary w-100 mb-3" onclick="escanearRedes()">
+ Escanear redes disponibles
+ </button>
+
+ <div id="listaRedes">
+ <div class="device-item">Buscando redes...</div>
+ </div>
+
+ <hr>
+
+ <h4>Red actual</h4>
+ <div class="device-item">
+ SSID: <span id="ssidActual">No conectado</span><br>
+ Señal: <span id="senalActual">-</span>
+ </div>
+
+ </div>
+
+ </div>
 
 <div class="dashboard-card">
 
@@ -346,6 +369,65 @@ document.getElementById('listaDispositivos').innerHTML +=
 alert('No se pudo conectar');
 }
 }
+
+async function escanearRedes(){
+ try{
+ const listaDiv = document.getElementById('listaRedes');
+ listaDiv.innerHTML = '<div class="device-item">Escaneando...</div>';
+ 
+ const response = await fetch('/api/wifi/scan');
+ const redes = await response.json();
+ 
+ listaDiv.innerHTML = '';
+ 
+ redes.forEach(red => {
+   const div = document.createElement('div');
+   div.className = 'device-item';
+   div.innerHTML = `
+     <strong>${red.ssid}</strong> (${red.signal})<br>
+     <button class="btn btn-sm btn-success mt-2" onclick="conectarRed('${red.ssid}')">Conectar</button>
+   `;
+   listaDiv.appendChild(div);
+ });
+ 
+ }catch(e){
+ document.getElementById('listaRedes').innerHTML = '<div class="device-item">Error escaneando</div>';
+ }
+}
+
+function conectarRed(ssid){
+ const pass = prompt(`Ingresa contraseña para ${ssid}:`);
+ 
+ if(!pass) return;
+ 
+ fetch('/api/wifi/connect', {
+   method: 'POST',
+   headers: {'Content-Type': 'application/json'},
+   body: JSON.stringify({ssid, password: pass})
+ })
+ .then(r => r.json())
+ .then(data => {
+   if(data.success){
+     alert('WiFi conectado');
+     cargarRedActual();
+   } else {
+     alert('Error: ' + data.error);
+   }
+ })
+ .catch(e => alert('Error de conexión'));
+}
+
+function cargarRedActual(){
+ fetch('/api/wifi/current')
+ .then(r => r.json())
+ .then(data => {
+   document.getElementById('ssidActual').textContent = data.ssid || 'No conectado';
+   document.getElementById('senalActual').textContent = data.signal || '-';
+ })
+ .catch(e => console.error('Error:', e));
+}
+
+document.addEventListener('DOMContentLoaded', cargarRedActual);
 </script>
 
 </body>
