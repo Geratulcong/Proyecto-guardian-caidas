@@ -28,4 +28,8 @@ def conectar_wifi(ssid, password):
         return False
 
 
-conectar_wifi("CasaLopezMoraga-BITRED_2.4G", "geronimo0602")
+if __name__ == "__main__":
+    conectar_wifi(
+        "CasaLopezMoraga-BITRED_2.4G",
+        "geronimo0602"
+    )

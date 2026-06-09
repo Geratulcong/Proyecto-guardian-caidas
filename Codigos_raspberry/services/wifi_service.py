@@ -8,9 +8,9 @@ class WifiService:
 
         proceso = await asyncio.create_subprocess_exec(
             "sudo", "nmcli",
-            "device", "wifi", "connect", ssid,
+            "device", "wifi",
+            "connect", ssid,
             "password", password,
-            "wifi-sec.key-mgmt", "wpa-psk",
             stdout=asyncio.subprocess.PIPE,
             stderr=asyncio.subprocess.PIPE
         )
@@ -19,6 +19,7 @@ class WifiService:
 
         if proceso.returncode == 0:
             print("WiFi conectado correctamente")
+            print(stdout.decode())
             return True
 
         print("Error conectando WiFi")
