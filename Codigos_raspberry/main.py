@@ -7,6 +7,7 @@ from services.ble_service import BLEService
 from services.raspberry_service import RaspberryService
 from services.setup_ble_service import SetupBLEService
 from database.dispositivos.raspberry_db import RaspberryDB
+from services.lsmt_model_service import ModeloCaidaService
 
 
 RASPBERRY_ID = RaspberryService.obtener_id()
@@ -16,7 +17,7 @@ print(f"Serial Raspberry: {RASPBERRY_ID}")
 ble_service = BLEService()
 connectivity_service = ConnectivityService()
 raspberry_db = RaspberryDB()
-
+modelo_caida_service = ModeloCaidaService()
 
 async def main():
 
@@ -61,7 +62,7 @@ async def main():
 
     print("Iniciando BLE con Arduino...")
 
-    await ble_service.conectar()
+    await ble_service.conectar(modelo_caida_service)
 
 
 asyncio.run(main())
