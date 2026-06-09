@@ -1,6 +1,4 @@
-from bleak import BleakScanner
-from bleak import BleakClient
-
+from bleak import BleakScanner, BleakClient
 import asyncio
 import json
 import time
@@ -13,33 +11,48 @@ CHARACTERISTIC_UUID = "19b10001-0000-1000-8000-00805f9b34fb"
 class BLEService:
 
     def __init__(self):
-
         self.client = None
-
         self.last_data_time = time.time()
+        self.modelo_caida_service = None
 
     async def notification_handler(self, sender, data):
 
         try:
-
             self.last_data_time = time.time()
 
             mensaje = data.decode()
-
             sensor_data = json.loads(mensaje)
 
-            print(sensor_data)
+            datos_sensor = [
+                sensor_data["ax"],
+                sensor_data["ay"],
+                sensor_data["az"],
+                sensor_data["gx"],
+                sensor_data["gy"],
+                sensor_data["gz"]
+            ]
+
+            resultado = self.modelo_caida_service.predecir(datos_sensor)
+
+            if resultado is None:
+                print("Llenando ventana del modelo...")
+                return
+
+            print(f"Probabilidad caída: {resultado['probabilidad']:.2f}")
+
+            if resultado["caida"]:
+                print("CAÍDA DETECTADA")
 
         except Exception as e:
-
             print(f"Error BLE: {e}")
 
-    async def conectar(self):
+    async def conectar(self, modelo_caida_service):
+
+        self.modelo_caida_service = modelo_caida_service
 
         while True:
 
             try:
-
                 print("Buscando Arduino...")
 
                 devices = await BleakScanner.discover()
@@ -47,18 +60,13 @@ class BLEService:
                 target = None
 
                 for device in devices:
-
                     if device.name == DEVICE_NAME:
-
                         target = device
                         break
 
                 if target is None:
-
                     print("Arduino no encontrado")
-
                     await asyncio.sleep(5)
-
                     continue
 
                 print(f"Conectando a {target.address}")
@@ -81,15 +89,11 @@ class BLEService:
                     tiempo_sin_datos = time.time() - self.last_data_time
 
                     if tiempo_sin_datos > 10:
-
                         print("Sensor desconectado")
-
                         await self.client.disconnect()
-
                         break
 
             except Exception as e:
-
                 print(f"Error conexión BLE: {e}")
 
             print("Reintentando conexión...")
@@ -97,7 +101,6 @@ class BLEService:
             await asyncio.sleep(5)
 
     async def desconectar(self):
-        """Desconecta del dispositivo BLE"""
         if self.client and self.client.is_connected:
             await self.client.disconnect()
             self.client = None
