@@ -24,12 +24,12 @@ class BLEService:
             sensor_data = json.loads(mensaje)
 
             datos_sensor = [
-                sensor_data["cadera_ax"],
-                sensor_data["cadera_ay"],
-                sensor_data["cadera_az"],
-                sensor_data["cadera_gx"],
-                sensor_data["cadera_gy"],
-                sensor_data["cadera_gz"]
+                sensor_data["ax"],
+                sensor_data["ay"],
+                sensor_data["az"],
+                sensor_data["gx"],
+                sensor_data["gy"],
+                sensor_data["gz"]
             ]
 
             resultado = self.modelo_caida_service.predecir(datos_sensor)
