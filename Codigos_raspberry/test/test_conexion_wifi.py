@@ -1,6 +1,14 @@
 import subprocess
 
 def conectar_wifi(ssid, password):
+
+    # Intentar eliminar una conexión guardada con el mismo nombre
+    subprocess.run(
+        ["sudo", "nmcli", "connection", "delete", ssid],
+        capture_output=True,
+        text=True
+    )
+
     try:
         resultado = subprocess.run(
             [
@@ -26,10 +34,3 @@ def conectar_wifi(ssid, password):
         print("Error conectando WiFi")
         print(e.stderr)
         return False
-
-
-if __name__ == "__main__":
-    conectar_wifi(
-        "CasaLopezMoraga-BITRED_2.4G",
-        "geronimo0602"
-    )
