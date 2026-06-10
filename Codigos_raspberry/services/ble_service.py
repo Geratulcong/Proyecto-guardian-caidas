@@ -23,10 +23,9 @@ class BLEService:
 
     async def enviar_mensaje_caida(self, probabilidad):
         print("Enviando mensaje de caída...")
-
         # Aquí después conectas tu WhatsApp, API o servicio de notificación
         print(f"ALERTA: Se detectó una caída. Probabilidad: {probabilidad:.2f}")
-        await self.notification_service.enviar_whatsapp("+56948094351", f"ALERTA: Se detectó una caída. Probabilidad: {probabilidad:.2f}")
+        await self.notification_service.enviar_whatsapp("56948094351", f"ALERTA: Se detectó una caída. Probabilidad: {probabilidad:.2f}")
 
     async def notification_handler(self, sender, data):
 
