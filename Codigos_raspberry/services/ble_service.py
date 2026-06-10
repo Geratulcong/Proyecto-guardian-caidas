@@ -3,6 +3,8 @@ import asyncio
 import json
 import time
 
+from services.notification_service import NotificationService
+
 DEVICE_NAME = "Sensor-Cadera"
 
 CHARACTERISTIC_UUID = "19b10001-0000-1000-8000-00805f9b34fb"
@@ -17,12 +19,14 @@ class BLEService:
         self.last_data_time = time.time()
         self.modelo_caida_service = None
         self.ultima_alerta_caida = 0
+        self.notification_service = NotificationService()
 
     async def enviar_mensaje_caida(self, probabilidad):
         print("Enviando mensaje de caída...")
 
         # Aquí después conectas tu WhatsApp, API o servicio de notificación
         print(f"ALERTA: Se detectó una caída. Probabilidad: {probabilidad:.2f}")
+        await self.notification_service.enviar_whatsapp("+56948094351", f"ALERTA: Se detectó una caída. Probabilidad: {probabilidad:.2f}")
 
     async def notification_handler(self, sender, data):
 

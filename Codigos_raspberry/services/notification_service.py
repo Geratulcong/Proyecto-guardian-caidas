@@ -10,7 +10,7 @@ class NotificationService:
         payload = {
             "phone": telefono,
             "text": mensaje,
-            "apikey": "TU_API_KEY"
+            "apikey": "9733456"
         }
 
         response = requests.get(url, params=payload)
