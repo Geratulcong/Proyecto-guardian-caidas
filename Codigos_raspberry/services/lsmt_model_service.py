@@ -47,6 +47,6 @@ class ModeloCaidaService:
         probabilidad = salida[0][0]
 
         return {
-            "caida": bool(probabilidad > 0.5),
+            "caida": bool(probabilidad > 0.9),
             "probabilidad": float(probabilidad)
         }

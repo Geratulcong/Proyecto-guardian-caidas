@@ -10,10 +10,19 @@ CHARACTERISTIC_UUID = "19b10001-0000-1000-8000-00805f9b34fb"
 
 class BLEService:
 
+    COOLDOWN_CAIDA = 30 * 60  # 30 minutos
+
     def __init__(self):
         self.client = None
         self.last_data_time = time.time()
         self.modelo_caida_service = None
+        self.ultima_alerta_caida = 0
+
+    async def enviar_mensaje_caida(self, probabilidad):
+        print("Enviando mensaje de caída...")
+
+        # Aquí después conectas tu WhatsApp, API o servicio de notificación
+        print(f"ALERTA: Se detectó una caída. Probabilidad: {probabilidad:.2f}")
 
     async def notification_handler(self, sender, data):
 
@@ -41,7 +50,20 @@ class BLEService:
             print(f"Probabilidad caída: {resultado['probabilidad']:.2f}")
 
             if resultado["caida"]:
+
+                tiempo_actual = time.time()
+
+                if tiempo_actual - self.ultima_alerta_caida < self.COOLDOWN_CAIDA:
+                    print("Caída detectada, pero alerta bloqueada por 30 minutos")
+                    return
+
+                self.ultima_alerta_caida = tiempo_actual
+
                 print("CAÍDA DETECTADA")
+
+                await self.enviar_mensaje_caida(
+                    resultado["probabilidad"]
+                )
 
         except Exception as e:
             print(f"Error BLE: {e}")
