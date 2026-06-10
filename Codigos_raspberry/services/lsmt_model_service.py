@@ -1,5 +1,5 @@
 import numpy as np
-import tensorflow as tf
+import tflite_runtime.interpreter as tflite
 
 
 class ModeloCaidaService:
@@ -7,8 +7,8 @@ class ModeloCaidaService:
     WINDOW_SIZE = 40
 
     def __init__(self):
-        self.interpreter = tf.lite.Interpreter(
-            model_path="models/modelo_caidas.tflite"
+        self.interpreter = tflite.Interpreter(
+            model_path="ml_models/modelo_caidas.tflite"
         )
 
         self.interpreter.allocate_tensors()
