@@ -1,4 +1,4 @@
-from Codigos_raspberry.database.connection import get_connection
+from database.connection import get_connection
 
 
 class EventoRaspberryDB:
@@ -20,7 +20,7 @@ class EventoRaspberryDB:
             raspberry_id,
             evento_tipo
         )
-        VALUES (?, ?, ?)
+        VALUES (%s, %s, %s)
         """
 
         cursor.execute(sql, (

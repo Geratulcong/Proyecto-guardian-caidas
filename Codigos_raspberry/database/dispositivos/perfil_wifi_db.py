@@ -1,6 +1,6 @@
 import uuid
 
-from Codigos_raspberry.database.connection import get_connection
+from database.connection import get_connection
 
 
 class PerfilWifiDB:
@@ -20,7 +20,7 @@ class PerfilWifiDB:
             perfil_seguridad,
             perfil_estado
         )
-        VALUES (?, ?, ?, ?, ?)
+        VALUES (%s, %s, %s, %s, %s)
         """
 
         cursor.execute(sql, (

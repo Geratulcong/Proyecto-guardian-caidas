@@ -52,7 +52,7 @@ class UsuarioDB:
             usuario_familiar_nombre,
             usuario_familiar_telefono
         )
-        VALUES (?, ?, ?, ?, ?, ?, ?)
+        VALUES (%s, %s, %s, %s, %s, %s, %s)
         """
 
         valores = (
@@ -83,8 +83,8 @@ class UsuarioDB:
 
         sql = """
         UPDATE Usuario
-        SET usuario_telefono = ?
-        WHERE usuario_id = ?
+        SET usuario_telefono = %s
+        WHERE usuario_id = %s
         """
 
         cursor.execute(sql, (

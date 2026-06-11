@@ -49,7 +49,7 @@ class ContactoDB:
             contacto_telefono,
             contacto_estado
         )
-        VALUES (?, ?, ?, ?, ?, ?)
+        VALUES (%s, %s, %s, %s, %s, %s)
         """
 
         cursor.execute(sql, (

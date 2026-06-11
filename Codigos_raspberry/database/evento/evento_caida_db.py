@@ -20,7 +20,7 @@ class EventoCaidaDB:
             raspberry_id,
             evento_tipo
         )
-        VALUES (?, ?, ?)
+        VALUES (%s, %s, %s)
         """
 
         cursor.execute(sql, (

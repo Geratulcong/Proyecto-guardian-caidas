@@ -27,7 +27,7 @@ class NotificacionDB:
             notificacion_estado,
             notificacion_mensaje
         )
-        VALUES (?, ?, ?, ?, ?, ?, ?)
+        VALUES (%s, %s, %s, %s, %s, %s, %s)
         """
 
         cursor.execute(sql, (

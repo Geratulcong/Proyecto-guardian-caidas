@@ -304,6 +304,28 @@
 // ==================== FUNCIONES JAVASCRIPT ====================
 let dispositivoBLE = null;
 let caracteristicaWifi = null;
+let API_BASE_URL = '';
+
+// Determinar la URL base de la API
+function initializeAPI() {
+  // Si está en producción, usa la URL actual
+  // Si está en desarrollo, usa localhost
+  const protocol = window.location.protocol;
+  const hostname = window.location.hostname;
+  const port = window.location.port || (protocol === 'https:' ? 443 : 80);
+  
+  // Si estamos en localhost o 127.0.0.1, asumimos que la API está en el mismo lugar
+  if (hostname === 'localhost' || hostname === '127.0.0.1' || hostname === '0.0.0.0') {
+    API_BASE_URL = `${protocol}//${hostname}:5000`;
+  } else {
+    // En producción, la API está en el mismo servidor en puerto 5000
+    API_BASE_URL = `${protocol}//${hostname}:5000`;
+  }
+  
+  console.log('API Base URL:', API_BASE_URL);
+}
+
+initializeAPI();
 
 const SERVICE_UUID = "12345678-1234-5678-1234-56789abcdef0";
 const WIFI_CHAR_UUID = "87654321-4321-4321-4321-123456789abc";
@@ -379,6 +401,67 @@ function guardarContactos(){
 
   localStorage.setItem('contactos', JSON.stringify(contactos));
   alert('Contactos guardados correctamente');
+}
+
+async function guardarUsuario(){
+  try {
+    const nombre = document.getElementById('usuarioNombre').value.trim();
+    const apellido = document.getElementById('usuarioApellido').value.trim();
+    const numero = document.getElementById('usuarioNumero').value.trim();
+
+    if(!nombre || !apellido || !numero){
+      alert('Todos los campos son obligatorios');
+      return;
+    }
+
+    const regexTexto = /^[A-Za-zÁÉÍÓÚáéíóúÑñ\s]+$/;
+    const regexTelefono = /^\+569\d{8}$/;
+
+    if(!regexTexto.test(nombre)){
+      alert('El nombre solo puede contener letras');
+      return;
+    }
+    if(!regexTexto.test(apellido)){
+      alert('El apellido solo puede contener letras');
+      return;
+    }
+    if(!regexTelefono.test(numero)){
+      alert('El número debe tener formato +569XXXXXXXX');
+      return;
+    }
+
+    const usuario_id = localStorage.getItem('usuario_id');
+    if(!usuario_id){
+      alert('Error: Usuario no identificado. Por favor inicia sesión de nuevo.');
+      return;
+    }
+
+    // Guardar en localStorage
+    localStorage.setItem('usuario_nombre', nombre);
+    localStorage.setItem('usuario_apellido', apellido);
+    localStorage.setItem('usuario_telefono', numero);
+
+    // Enviar a la BD
+    const response = await fetch(`${API_BASE_URL}/api/usuarios/${usuario_id}`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        telefono: numero
+      })
+    });
+
+    if(response.ok){
+      alert('Datos guardados correctamente');
+    } else {
+      alert('Error al guardar los datos');
+    }
+
+  } catch(error) {
+    console.error('Error:', error);
+    alert('Error al guardar los datos: ' + error.message);
+  }
 }
 
 function editarContacto(btn){
@@ -521,16 +604,46 @@ document.getElementById("btnGoogle").addEventListener("click", async () => {
   }
 });
 
-onAuthStateChanged(auth, (user) => {
+onAuthStateChanged(auth, async (user) => {
   const loginScreen = document.getElementById("loginScreen");
   const appPrincipal = document.getElementById("appPrincipal");
   
   if (user) {
+    // Verificar o crear usuario en la BD
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/usuarios/verificar-o-crear`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          email: user.email,
+          nombre: user.displayName || user.email.split('@')[0]
+        })
+      });
+
+      if (response.ok) {
+        const datos = await response.json();
+        localStorage.setItem('usuario_id', datos.usuario_id);
+        localStorage.setItem('usuario_email', user.email);
+        localStorage.setItem('usuario_nombre', user.displayName || user.email);
+        
+        console.log('Usuario en BD:', datos.estado, datos.usuario_id);
+      } else {
+        console.error('Error al registrar usuario en BD');
+      }
+    } catch (error) {
+      console.error('Error conectando con el servidor:', error);
+    }
+
     loginScreen.style.display = "none";
     appPrincipal.style.display = "block";
   } else {
     loginScreen.style.display = "flex";
     appPrincipal.style.display = "none";
+    localStorage.removeItem('usuario_id');
+    localStorage.removeItem('usuario_email');
+    localStorage.removeItem('usuario_nombre');
   }
 });
 

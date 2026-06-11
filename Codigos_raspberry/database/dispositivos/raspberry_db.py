@@ -1,4 +1,4 @@
-from Codigos_raspberry.database.connection import get_connection
+from database.connection import get_connection
 
 
 class RaspberryDB:
@@ -16,7 +16,7 @@ class RaspberryDB:
             raspberry_estado_pagina_web,
             raspberry_nivel_bateria
         FROM Raspberry_PI
-        WHERE raspberry_id = ?
+        WHERE raspberry_id = %s
         """
 
         cursor.execute(sql, (raspberry_id,))
@@ -41,10 +41,10 @@ class RaspberryDB:
         sql = """
         UPDATE Raspberry_Pi
         SET
-            raspberry_estado_arduino = ?,
-            raspberry_estado_pagina_web = ?,
-            raspberry_nivel_bateria = ?
-        WHERE raspberry_id = ?
+            raspberry_estado_arduino = %s,
+            raspberry_estado_pagina_web = %s,
+            raspberry_nivel_bateria = %s
+        WHERE raspberry_id = %s
         """
 
         cursor.execute(sql, (
@@ -53,6 +53,10 @@ class RaspberryDB:
             nivel_bateria,
             raspberry_id
         ))
+
+        conn.commit()
+
+        conn.close()
 
     def crear_raspberry(self, raspberry_id):
         conn = get_connection()
@@ -67,7 +71,7 @@ class RaspberryDB:
             raspberry_estado_pagina_web,
             raspberry_nivel_bateria
         )
-        VALUES (?, ?, ?, ?, ?)
+        VALUES (%s, %s, %s, %s, %s)
         """
 
         cursor.execute(sql, (

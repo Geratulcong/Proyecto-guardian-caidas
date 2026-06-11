@@ -1,4 +1,4 @@
-from Codigos_raspberry.database.connection import get_connection
+from database.connection import get_connection
 
 
 class ArduinoDB:
@@ -15,8 +15,8 @@ class ArduinoDB:
 
         sql = """
         UPDATE Arduino
-        SET arduino_estado = ?
-        WHERE arduino_id = ?
+        SET arduino_estado = %s
+        WHERE arduino_id = %s
         """
 
         cursor.execute(sql, (
