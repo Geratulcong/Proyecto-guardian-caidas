@@ -7,7 +7,7 @@ class EventoCaidaDB:
         self,
         evento_id,
         raspberry_id,
-        tipo_evento
+        evento_tipo
     ):
 
         conn = get_connection()
@@ -18,7 +18,7 @@ class EventoCaidaDB:
         INSERT INTO Evento_Caida (
             evento_id,
             raspberry_id,
-            tipo_evento
+            evento_tipo
         )
         VALUES (?, ?, ?)
         """
@@ -26,7 +26,7 @@ class EventoCaidaDB:
         cursor.execute(sql, (
             evento_id,
             raspberry_id,
-            tipo_evento
+            evento_tipo
         ))
 
         conn.commit()
