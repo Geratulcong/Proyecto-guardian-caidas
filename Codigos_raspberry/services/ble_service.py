@@ -1,3 +1,5 @@
+from uuid import uuid4
+
 from bleak import BleakScanner, BleakClient
 import asyncio
 import json
@@ -21,11 +23,26 @@ class BLEService:
         self.ultima_alerta_caida = 0
         self.notification_service = NotificationService()
 
+
+    
     async def enviar_mensaje_caida(self, probabilidad):
+
         print("Enviando mensaje de caída...")
-        # Aquí después conectas tu WhatsApp, API o servicio de notificación
-        print(f"ALERTA: Se detectó una caída. Probabilidad: {probabilidad:.2f}")
-        await self.notification_service.enviar_whatsapp("56948094351", f"ALERTA: Se detectó una caída. Probabilidad: {probabilidad:.2f}")
+        contactos = self.contacto_db.obtener_contactos_activos(
+            self.usuario_id
+        )
+
+        for contacto in contactos:
+
+            contacto_id = contacto[0]
+            telefono = contacto[2]
+
+            await self.notification_service.enviar_whatsapp(
+                contacto_id=contacto_id,
+                telefono=telefono,
+                mensaje=f"ALERTA: Se detectó una caída. Probabilidad: {probabilidad:.2f}",
+                evento_id = str(uuid4())
+            )
 
     async def notification_handler(self, sender, data):
 

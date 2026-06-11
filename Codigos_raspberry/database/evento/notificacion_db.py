@@ -1,37 +1,45 @@
 from database.connection import get_connection
 
 
-class EventoCaidaDB:
+class NotificacionDB:
 
-    def registrar_evento(
+    def registrar_notificacion(
         self,
-        evento_id,
-        raspberry_id,
-        tipo_evento,
-        mensaje
+        notificacion_id,
+        contacto_id,
+        evento_id=None,
+        evento_raspberry_id=None,
+        canal="WhatsApp",
+        estado="Pendiente",
+        mensaje=""
     ):
 
         conn = get_connection()
-
         cursor = conn.cursor()
 
         sql = """
-        INSERT INTO Evento_Caida (
+        INSERT INTO Notificacion (
+            notificacion_id,
+            contacto_id,
             evento_id,
-            raspberry_id,
-            evento_tipo,
-            mensaje
+            evento_raspberry_id,
+            notificacion_canal,
+            notificacion_estado,
+            notificacion_mensaje
         )
-        VALUES (?, ?, ?, ?)
+        VALUES (?, ?, ?, ?, ?, ?, ?)
         """
 
         cursor.execute(sql, (
+            notificacion_id,
+            contacto_id,
             evento_id,
-            raspberry_id,
-            tipo_evento,
+            evento_raspberry_id,
+            canal,
+            estado,
             mensaje
         ))
 
         conn.commit()
-
+        cursor.close()
         conn.close()

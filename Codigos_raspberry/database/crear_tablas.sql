@@ -75,7 +75,6 @@ CREATE TABLE Notificacion (
     contacto_id CHAR(36) NOT NULL,
     evento_id CHAR(36),
     evento_raspberry_id CHAR(36),
-
     notificacion_canal VARCHAR(30),
     notificacion_estado VARCHAR(30),
     notificacion_mensaje TEXT,

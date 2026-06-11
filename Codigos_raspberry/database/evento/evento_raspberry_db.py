@@ -1,4 +1,4 @@
-from database.dispositivos.connection import get_connection
+from Codigos_raspberry.database.connection import get_connection
 
 
 class EventoRaspberryDB:
