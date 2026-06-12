@@ -152,3 +152,26 @@ class ContactoDB:
         conn.commit()
 
         conn.close()
+
+    def obtener_contactos_activos(self, usuario_id):
+
+        conn = get_connection()
+        cursor = conn.cursor()
+
+        cursor.execute("""
+            SELECT
+                contacto_id,
+                usuario_id,
+                contacto_nombre,
+                contacto_telefono,
+                contacto_estado
+            FROM Contacto_Emergencia
+            WHERE usuario_id = %s
+            AND contacto_estado = TRUE
+        """, (usuario_id,))
+
+        contactos = cursor.fetchall()
+
+        conn.close()
+
+        return contactos
