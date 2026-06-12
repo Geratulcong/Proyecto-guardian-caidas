@@ -37,13 +37,13 @@ class BLEService:
         for contacto in contactos:
 
             contacto_id = contacto[0]
-            telefono = contacto[2]
+            telefono = contacto[3]
 
             await self.notification_service.enviar_whatsapp(
                 contacto_id=contacto_id,
                 telefono=telefono,
                 mensaje=f"ALERTA: Se detectó una caída. Probabilidad: {probabilidad:.2f}",
-                evento_id = str(uuid4())
+                evento_id = None
             )
 
     async def notification_handler(self, sender, data):
