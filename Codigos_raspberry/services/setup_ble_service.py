@@ -50,10 +50,10 @@ class SetupBLEService:
         await server.add_new_characteristic(
             SERVICE_UUID,
             WIFI_CHAR_UUID,
-            GATTCharacteristicProperties.write,
-            None,
+            GATTCharacteristicProperties.write | GATTCharacteristicProperties.write_without_response,
+            bytearray(),
             GATTAttributePermissions.writeable
-        )
+)
 
         await server.start()
 
