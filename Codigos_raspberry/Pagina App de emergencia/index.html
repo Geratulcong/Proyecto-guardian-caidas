@@ -431,8 +431,7 @@ async function guardarContactosEnBD(contactos){
     // Eliminar contactos que ya no están en la nueva lista
     for (let contactoEx of contactosExistentes) {
       const encontrado = contactos.some(c => 
-        c.nombre === contactoEx.nombre && 
-        c.apellido === contactoEx.apellido
+        c.nombre === contactoEx.nombre 
       );
       
       if(!encontrado){
@@ -449,8 +448,7 @@ async function guardarContactosEnBD(contactos){
     // Crear nuevos contactos
     for (let contacto of contactos) {
       const existe = contactosExistentes.some(c => 
-        c.nombre === contacto.nombre && 
-        c.apellido === contacto.apellido
+        c.nombre === contacto.nombre 
       );
 
       if(!existe){
@@ -461,7 +459,6 @@ async function guardarContactosEnBD(contactos){
           },
           body: JSON.stringify({
             nombre: contacto.nombre,
-            apellido: contacto.apellido,
             telefono: contacto.numero,
             estado: true
           })
@@ -520,7 +517,6 @@ async function cargarContactosDelBD(){
     // Cargar en localStorage
     const contactosFormato = contactos.map(c => ({
       nombre: c.nombre,
-      apellido: c.apellido,
       numero: c.telefono
     }));
     localStorage.setItem('contactos', JSON.stringify(contactosFormato));
@@ -534,10 +530,9 @@ async function cargarContactosDelBD(){
 async function guardarUsuario(){
   try {
     const nombre = document.getElementById('usuarioNombre').value.trim();
-    const apellido = document.getElementById('usuarioApellido').value.trim();
     const numero = document.getElementById('usuarioNumero').value.trim();
 
-    if(!nombre || !apellido || !numero){
+    if(!nombre || !numero){
       alert('Todos los campos son obligatorios');
       return;
     }
@@ -547,10 +542,6 @@ async function guardarUsuario(){
 
     if(!regexTexto.test(nombre)){
       alert('El nombre solo puede contener letras');
-      return;
-    }
-    if(!regexTexto.test(apellido)){
-      alert('El apellido solo puede contener letras');
       return;
     }
     if(!regexTelefono.test(numero)){
@@ -566,13 +557,11 @@ async function guardarUsuario(){
 
     // Guardar en localStorage
     localStorage.setItem('usuario_nombre', nombre);
-    localStorage.setItem('usuario_apellido', apellido);
     localStorage.setItem('usuario_telefono', numero);
 
     console.log('Guardando usuario en BD:', {
       usuario_id,
       nombre,
-      apellido,
       telefono: numero
     });
 
@@ -584,7 +573,6 @@ async function guardarUsuario(){
       },
       body: JSON.stringify({
         nombre: nombre,
-        apellido: apellido,
         telefono: numero
       })
     });

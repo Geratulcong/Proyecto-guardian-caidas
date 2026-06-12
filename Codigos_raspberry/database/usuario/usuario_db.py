@@ -125,7 +125,6 @@ class UsuarioDB:
         self,
         usuario_id,
         nombre=None,
-        apellido=None,
         telefono=None,
         familiar_nombre=None,
         familiar_telefono=None
@@ -145,10 +144,6 @@ class UsuarioDB:
         if nombre is not None:
             updates.append("usuario_nombre = %s")
             valores.append(nombre)
-
-        if apellido is not None:
-            updates.append("usuario_familiar_nombre = %s")
-            valores.append(apellido)
 
         if telefono is not None:
             updates.append("usuario_telefono = %s")

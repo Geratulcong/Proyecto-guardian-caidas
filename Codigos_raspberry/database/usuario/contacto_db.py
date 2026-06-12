@@ -15,7 +15,6 @@ class ContactoDB:
                 contacto_id,
                 usuario_id,
                 contacto_nombre,
-                contacto_apellido,
                 contacto_telefono,
                 contacto_estado
             FROM Contacto_Emergencia
@@ -39,7 +38,6 @@ class ContactoDB:
                 contacto_id,
                 usuario_id,
                 contacto_nombre,
-                contacto_apellido,
                 contacto_telefono,
                 contacto_estado
             FROM Contacto_Emergencia
@@ -57,7 +55,6 @@ class ContactoDB:
         contacto_id,
         usuario_id,
         contacto_nombre,
-        contacto_apellido,
         contacto_telefono,
         contacto_estado=True
     ):
@@ -71,18 +68,16 @@ class ContactoDB:
             contacto_id,
             usuario_id,
             contacto_nombre,
-            contacto_apellido,
             contacto_telefono,
             contacto_estado
         )
-        VALUES (%s, %s, %s, %s, %s, %s)
+        VALUES (%s, %s, %s, %s, %s)
         """
 
         cursor.execute(sql, (
             contacto_id,
             usuario_id,
             contacto_nombre,
-            contacto_apellido,
             contacto_telefono,
             contacto_estado
         ))
@@ -95,7 +90,6 @@ class ContactoDB:
         self,
         contacto_id,
         contacto_nombre=None,
-        contacto_apellido=None,
         contacto_telefono=None,
         contacto_estado=None
     ):
@@ -112,9 +106,6 @@ class ContactoDB:
             updates.append("contacto_nombre = %s")
             valores.append(contacto_nombre)
 
-        if contacto_apellido is not None:
-            updates.append("contacto_apellido = %s")
-            valores.append(contacto_apellido)
 
         if contacto_telefono is not None:
             updates.append("contacto_telefono = %s")

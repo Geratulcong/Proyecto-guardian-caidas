@@ -110,7 +110,7 @@ def obtener_usuario(usuario_id):
 def actualizar_usuario(usuario_id):
     """
     Actualiza los datos de un usuario.
-    Puede actualizar: nombre, apellido, teléfono
+    Puede actualizar: nombre, teléfono
     """
     try:
         datos = request.json
@@ -128,14 +128,12 @@ def actualizar_usuario(usuario_id):
         
         # Actualizar con los datos proporcionados
         nombre = datos.get('nombre')
-        apellido = datos.get('apellido')
         telefono = datos.get('telefono')
         
         # Usar el nuevo método de actualización múltiple
         usuario_db.actualizar_usuario(
             usuario_id=usuario_id,
             nombre=nombre,
-            apellido=apellido,
             telefono=telefono
         )
         
@@ -144,7 +142,6 @@ def actualizar_usuario(usuario_id):
             'usuario_id': usuario_id,
             'datos_actualizados': {
                 'nombre': nombre,
-                'apellido': apellido,
                 'telefono': telefono
             }
         }), 200
@@ -152,13 +149,8 @@ def actualizar_usuario(usuario_id):
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
+@app.route('/api/usuarios/<usuario_id>', methods=['PUT'])
 
-@app.route('/api/health', methods=['GET'])
-def health():
-    """
-    Endpoint para verificar que el servidor está activo.
-    """
-    return jsonify({'status': 'ok'}), 200
 
 
 # ================ ENDPOINTS DE CONTACTOS ================
@@ -177,9 +169,8 @@ def obtener_contactos_usuario(usuario_id):
                 'contacto_id': str(c[0]),
                 'usuario_id': str(c[1]),
                 'nombre': c[2],
-                'apellido': c[3],
-                'telefono': c[4],
-                'estado': c[5]
+                'telefono': c[3],
+                'estado': c[4]
             })
         
         return jsonify({
@@ -199,8 +190,8 @@ def crear_contacto(usuario_id):
     try:
         datos = request.json
         
-        if not datos or 'nombre' not in datos or 'apellido' not in datos or 'telefono' not in datos:
-            return jsonify({'error': 'nombre, apellido y telefono son requeridos'}), 400
+        if not datos or 'nombre' not in datos or 'telefono' not in datos:
+            return jsonify({'error': 'nombre y telefono son requeridos'}), 400
         
         contacto_id = str(uuid4())
         
@@ -208,7 +199,6 @@ def crear_contacto(usuario_id):
             contacto_id=contacto_id,
             usuario_id=usuario_id,
             contacto_nombre=datos['nombre'],
-            contacto_apellido=datos['apellido'],
             contacto_telefono=datos['telefono'],
             contacto_estado=datos.get('estado', True)
         )
@@ -233,7 +223,6 @@ def actualizar_contacto(contacto_id):
         contacto_db.actualizar_contacto(
             contacto_id=contacto_id,
             contacto_nombre=datos.get('nombre'),
-            contacto_apellido=datos.get('apellido'),
             contacto_telefono=datos.get('telefono'),
             contacto_estado=datos.get('estado')
         )
