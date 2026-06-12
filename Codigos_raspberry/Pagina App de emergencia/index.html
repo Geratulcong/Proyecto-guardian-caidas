@@ -399,8 +399,136 @@ function guardarContactos(){
 
   if(error) return;
 
+  // Guardar en localStorage
   localStorage.setItem('contactos', JSON.stringify(contactos));
-  alert('Contactos guardados correctamente');
+
+  // Guardar en BD
+  guardarContactosEnBD(contactos);
+}
+
+async function guardarContactosEnBD(contactos){
+  try {
+    const usuario_id = localStorage.getItem('usuario_id');
+    
+    if(!usuario_id){
+      alert('Error: Usuario no identificado');
+      return;
+    }
+
+    console.log('Guardando contactos en BD para usuario:', usuario_id);
+
+    // Obtener contactos actuales de la BD
+    const responseObtener = await fetch(`${API_BASE_URL}/api/usuarios/${usuario_id}/contactos`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json'
+      }
+    });
+
+    const datosExistentes = await responseObtener.json();
+    const contactosExistentes = datosExistentes.contactos || [];
+
+    // Eliminar contactos que ya no están en la nueva lista
+    for (let contactoEx of contactosExistentes) {
+      const encontrado = contactos.some(c => 
+        c.nombre === contactoEx.nombre && 
+        c.apellido === contactoEx.apellido
+      );
+      
+      if(!encontrado){
+        // Eliminar este contacto
+        await fetch(`${API_BASE_URL}/api/contactos/${contactoEx.contacto_id}`, {
+          method: 'DELETE',
+          headers: {
+            'Content-Type': 'application/json'
+          }
+        });
+      }
+    }
+
+    // Crear nuevos contactos
+    for (let contacto of contactos) {
+      const existe = contactosExistentes.some(c => 
+        c.nombre === contacto.nombre && 
+        c.apellido === contacto.apellido
+      );
+
+      if(!existe){
+        const response = await fetch(`${API_BASE_URL}/api/usuarios/${usuario_id}/contactos`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            nombre: contacto.nombre,
+            apellido: contacto.apellido,
+            telefono: contacto.numero,
+            estado: true
+          })
+        });
+
+        if(!response.ok){
+          const error = await response.json();
+          console.error('Error al crear contacto:', error);
+        }
+      }
+    }
+
+    console.log('✅ Contactos guardados en BD');
+    alert('✅ Contactos guardados correctamente');
+
+  } catch(error) {
+    console.error('Error al guardar contactos en BD:', error);
+    alert('⚠️ Contactos guardados localmente, pero hubo un error en BD: ' + error.message);
+  }
+}
+
+async function cargarContactosDelBD(){
+  try {
+    const usuario_id = localStorage.getItem('usuario_id');
+    
+    if(!usuario_id){
+      console.warn('Usuario no identificado, cargando desde localStorage');
+      return;
+    }
+
+    console.log('Cargando contactos de BD para usuario:', usuario_id);
+
+    const response = await fetch(`${API_BASE_URL}/api/usuarios/${usuario_id}/contactos`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json'
+      }
+    });
+
+    if(!response.ok){
+      throw new Error('No se pudieron cargar los contactos de BD');
+    }
+
+    const datos = await response.json();
+    const contactos = datos.contactos || [];
+
+    console.log('Contactos cargados de BD:', contactos);
+
+    // Limpiar contactos existentes en la página
+    const contenedor = document.getElementById('contenedorContactos');
+    if(contenedor && contactos.length > 0){
+      // Si hay contactos en BD, limpiar y recrear
+      // Mantener solo el primer contacto como referencia
+    }
+
+    // Cargar en localStorage
+    const contactosFormato = contactos.map(c => ({
+      nombre: c.nombre,
+      apellido: c.apellido,
+      numero: c.telefono
+    }));
+    localStorage.setItem('contactos', JSON.stringify(contactosFormato));
+
+  } catch(error) {
+    console.error('Error al cargar contactos de BD:', error);
+    // Usar localStorage como fallback
+  }
 }
 
 async function guardarUsuario(){
@@ -441,6 +569,13 @@ async function guardarUsuario(){
     localStorage.setItem('usuario_apellido', apellido);
     localStorage.setItem('usuario_telefono', numero);
 
+    console.log('Guardando usuario en BD:', {
+      usuario_id,
+      nombre,
+      apellido,
+      telefono: numero
+    });
+
     // Enviar a la BD
     const response = await fetch(`${API_BASE_URL}/api/usuarios/${usuario_id}`, {
       method: 'PUT',
@@ -448,21 +583,42 @@ async function guardarUsuario(){
         'Content-Type': 'application/json'
       },
       body: JSON.stringify({
+        nombre: nombre,
+        apellido: apellido,
         telefono: numero
       })
     });
 
+    const resultado = await response.json();
+
     if(response.ok){
-      alert('Datos guardados correctamente');
+      console.log('Usuario guardado exitosamente:', resultado);
+      alert('✅ Datos guardados correctamente');
     } else {
-      alert('Error al guardar los datos');
+      console.error('Error en respuesta del servidor:', resultado);
+      alert('❌ Error al guardar: ' + (resultado.error || 'Error desconocido'));
     }
 
   } catch(error) {
-    console.error('Error:', error);
-    alert('Error al guardar los datos: ' + error.message);
+    console.error('Error al guardar usuario:', error);
+    alert('❌ Error: ' + error.message);
   }
 }
+
+// Cargar datos del usuario cuando se muestre la vista
+window.addEventListener('load', function(){
+  // Cargar datos guardados en localStorage
+  const nombre = localStorage.getItem('usuario_nombre');
+  const apellido = localStorage.getItem('usuario_apellido');
+  const telefono = localStorage.getItem('usuario_telefono');
+  
+  if(nombre) document.getElementById('usuarioNombre').value = nombre;
+  if(apellido) document.getElementById('usuarioApellido').value = apellido;
+  if(telefono) document.getElementById('usuarioNumero').value = telefono;
+
+  // Cargar contactos desde BD
+  cargarContactosDelBD();
+});
 
 function editarContacto(btn){
   const card = btn.closest('.contacto-card');

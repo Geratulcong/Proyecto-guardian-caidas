@@ -95,3 +95,89 @@ class UsuarioDB:
         conn.commit()
 
         conn.close()
+
+    def actualizar_nombre(
+        self,
+        usuario_id,
+        nuevo_nombre
+    ):
+
+        conn = get_connection()
+
+        cursor = conn.cursor()
+
+        sql = """
+        UPDATE Usuario
+        SET usuario_nombre = %s
+        WHERE usuario_id = %s
+        """
+
+        cursor.execute(sql, (
+            nuevo_nombre,
+            usuario_id
+        ))
+
+        conn.commit()
+
+        conn.close()
+
+    def actualizar_usuario(
+        self,
+        usuario_id,
+        nombre=None,
+        apellido=None,
+        telefono=None,
+        familiar_nombre=None,
+        familiar_telefono=None
+    ):
+        """
+        Actualiza múltiples campos del usuario.
+        Solo actualiza los campos que se proporcionen.
+        """
+
+        conn = get_connection()
+
+        cursor = conn.cursor()
+
+        updates = []
+        valores = []
+
+        if nombre is not None:
+            updates.append("usuario_nombre = %s")
+            valores.append(nombre)
+
+        if apellido is not None:
+            updates.append("usuario_familiar_nombre = %s")
+            valores.append(apellido)
+
+        if telefono is not None:
+            updates.append("usuario_telefono = %s")
+            valores.append(telefono)
+
+        if familiar_nombre is not None:
+            updates.append("usuario_familiar_nombre = %s")
+            valores.append(familiar_nombre)
+
+        if familiar_telefono is not None:
+            updates.append("usuario_familiar_telefono = %s")
+            valores.append(familiar_telefono)
+
+        if not updates:
+            conn.close()
+            return False
+
+        valores.append(usuario_id)
+
+        sql = f"""
+        UPDATE Usuario
+        SET {', '.join(updates)}
+        WHERE usuario_id = %s
+        """
+
+        cursor.execute(sql, valores)
+
+        conn.commit()
+
+        conn.close()
+
+        return True

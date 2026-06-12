@@ -3,6 +3,7 @@ from flask_cors import CORS
 from uuid import uuid4
 import os
 from database.usuario.usuario_db import UsuarioDB
+from database.usuario.contacto_db import ContactoDB
 from database.dispositivos.raspberry_db import RaspberryDB
 
 # Configurar rutas
@@ -13,6 +14,7 @@ app = Flask(__name__, static_folder=WEB_FOLDER, static_url_path='')
 CORS(app)
 
 usuario_db = UsuarioDB()
+contacto_db = ContactoDB()
 raspberry_db = RaspberryDB()
 
 # Configuración del servidor
@@ -108,20 +110,161 @@ def obtener_usuario(usuario_id):
 def actualizar_usuario(usuario_id):
     """
     Actualiza los datos de un usuario.
+    Puede actualizar: nombre, apellido, teléfono
     """
     try:
         datos = request.json
         
-        if 'telefono' in datos:
-            usuario_db.actualizar_telefono(usuario_id, datos['telefono'])
+        # Obtener usuario actual
+        usuarios = usuario_db.obtener_usuarios()
+        usuario = None
+        for u in usuarios:
+            if str(u[0]) == usuario_id:
+                usuario = u
+                break
+        
+        if not usuario:
+            return jsonify({'error': 'Usuario no encontrado'}), 404
+        
+        # Actualizar con los datos proporcionados
+        nombre = datos.get('nombre')
+        apellido = datos.get('apellido')
+        telefono = datos.get('telefono')
+        
+        # Usar el nuevo método de actualización múltiple
+        usuario_db.actualizar_usuario(
+            usuario_id=usuario_id,
+            nombre=nombre,
+            apellido=apellido,
+            telefono=telefono
+        )
         
         return jsonify({
-            'mensaje': 'Usuario actualizado correctamente'
+            'mensaje': 'Usuario actualizado correctamente',
+            'usuario_id': usuario_id,
+            'datos_actualizados': {
+                'nombre': nombre,
+                'apellido': apellido,
+                'telefono': telefono
+            }
         }), 200
         
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
+
+@app.route('/api/health', methods=['GET'])
+def health():
+    """
+    Endpoint para verificar que el servidor está activo.
+    """
+    return jsonify({'status': 'ok'}), 200
+
+
+# ================ ENDPOINTS DE CONTACTOS ================
+
+@app.route('/api/usuarios/<usuario_id>/contactos', methods=['GET'])
+def obtener_contactos_usuario(usuario_id):
+    """
+    Obtiene todos los contactos de un usuario.
+    """
+    try:
+        contactos = contacto_db.obtener_contactos_usuario(usuario_id)
+        
+        contactos_lista = []
+        for c in contactos:
+            contactos_lista.append({
+                'contacto_id': str(c[0]),
+                'usuario_id': str(c[1]),
+                'nombre': c[2],
+                'apellido': c[3],
+                'telefono': c[4],
+                'estado': c[5]
+            })
+        
+        return jsonify({
+            'contactos': contactos_lista,
+            'total': len(contactos_lista)
+        }), 200
+        
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+
+@app.route('/api/usuarios/<usuario_id>/contactos', methods=['POST'])
+def crear_contacto(usuario_id):
+    """
+    Crea un nuevo contacto de emergencia para un usuario.
+    """
+    try:
+        datos = request.json
+        
+        if not datos or 'nombre' not in datos or 'apellido' not in datos or 'telefono' not in datos:
+            return jsonify({'error': 'nombre, apellido y telefono son requeridos'}), 400
+        
+        contacto_id = str(uuid4())
+        
+        contacto_db.guardar_contacto(
+            contacto_id=contacto_id,
+            usuario_id=usuario_id,
+            contacto_nombre=datos['nombre'],
+            contacto_apellido=datos['apellido'],
+            contacto_telefono=datos['telefono'],
+            contacto_estado=datos.get('estado', True)
+        )
+        
+        return jsonify({
+            'contacto_id': contacto_id,
+            'mensaje': 'Contacto creado exitosamente'
+        }), 201
+        
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+
+@app.route('/api/contactos/<contacto_id>', methods=['PUT'])
+def actualizar_contacto(contacto_id):
+    """
+    Actualiza un contacto de emergencia.
+    """
+    try:
+        datos = request.json
+        
+        contacto_db.actualizar_contacto(
+            contacto_id=contacto_id,
+            contacto_nombre=datos.get('nombre'),
+            contacto_apellido=datos.get('apellido'),
+            contacto_telefono=datos.get('telefono'),
+            contacto_estado=datos.get('estado')
+        )
+        
+        return jsonify({
+            'mensaje': 'Contacto actualizado correctamente',
+            'contacto_id': contacto_id
+        }), 200
+        
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+
+@app.route('/api/contactos/<contacto_id>', methods=['DELETE'])
+def eliminar_contacto(contacto_id):
+    """
+    Elimina un contacto de emergencia.
+    """
+    try:
+        contacto_db.eliminar_contacto(contacto_id)
+        
+        return jsonify({
+            'mensaje': 'Contacto eliminado correctamente',
+            'contacto_id': contacto_id
+        }), 200
+        
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+
+# ================ ENDPOINTS ESTÁTICOS ================
 
 @app.route('/api/health', methods=['GET'])
 def health():
