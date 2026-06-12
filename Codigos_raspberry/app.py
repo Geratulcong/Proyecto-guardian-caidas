@@ -254,6 +254,21 @@ def eliminar_contacto(contacto_id):
         
     except Exception as e:
         return jsonify({'error': str(e)}), 500
+    
+@app.route('/api/raspberry/vincular', methods=['POST'])
+def vincular_raspberry():
+    datos = request.json
+
+    usuario_id = datos.get("usuario_id")
+    raspberry_id = datos.get("raspberry_id")
+
+    raspberry_db.vincular_usuario(raspberry_id, usuario_id)
+ 
+    return jsonify({
+        "mensaje": "Raspberry vinculada correctamente",
+        "raspberry_id": raspberry_id,
+        "usuario_id": usuario_id
+    }), 200
 
 
 # ================ ENDPOINTS ESTÁTICOS ================

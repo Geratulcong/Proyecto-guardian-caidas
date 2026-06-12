@@ -86,3 +86,24 @@ class RaspberryDB:
         conn.commit()
 
         conn.close()
+        
+    def vincular_usuario(self, raspberry_id, usuario_id):
+            conn = get_connection()
+            cursor = conn.cursor()
+
+            sql = """
+            UPDATE Raspberry_PI
+            SET usuario_id = %s,
+                raspberry_estado_pagina_web = %s
+            WHERE raspberry_id = %s
+            """
+
+            cursor.execute(sql, (
+                usuario_id,
+                "Vinculado",
+                raspberry_id
+            ))
+
+            conn.commit()
+            cursor.close()
+            conn.close()

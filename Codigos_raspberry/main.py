@@ -58,6 +58,12 @@ async def main():
 
     print(f"Raspberry cargado: {raspberry.raspberry_id}")
 
+    if raspberry.usuario_id is None:
+        print("Raspberry registrada, pero aún no está vinculada a un usuario")
+        print(f"Usa este ID para vincularla desde la web: {raspberry.raspberry_id}")
+    else:
+        print(f"Raspberry vinculada al usuario: {raspberry.usuario_id}")
+
     raspberry.cambiar_estado(EstadoOperacion.MONITOREO)
 
     print("Iniciando BLE con Arduino...")
