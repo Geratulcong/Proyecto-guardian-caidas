@@ -7,7 +7,7 @@ from bless import GATTCharacteristicProperties, GATTAttributePermissions
 from services.wifi_service import WifiService
 from services.raspberry_service import RaspberryService
 from database.dispositivos.perfil_wifi_db import PerfilWifiDB
-
+from database.dispositivos.raspberry_db import RaspberryDB
 
 SERVICE_UUID = "12345678-1234-5678-1234-56789abcdef0"
 WIFI_CHAR_UUID = "87654321-4321-4321-4321-123456789abc"
@@ -83,24 +83,23 @@ class SetupBLEService:
 
             raspberry_id = RaspberryService.obtener_id()
 
+            raspberry_db = RaspberryDB()
+            datos_raspberry = raspberry_db.obtener_raspberry(raspberry_id)
+
+            if not datos_raspberry:
+                raspberry_db.crear_raspberry(
+                    raspberry_id=raspberry_id,
+                    usuario_id=usuario_id
+                )
+                print("Raspberry registrada y vinculada al usuario")
+            else:
+                raspberry_db.vincular_usuario(
+                    raspberry_id=raspberry_id,
+                    usuario_id=usuario_id
+                )
+                print("Raspberry existente vinculada al usuario")
+
             perfil_wifi_db = PerfilWifiDB()
-
-            perfil_wifi_db.guardar_perfil(
-                raspberry_id=raspberry_id,
-                ssid=ssid,
-                seguridad="WPA2",
-                estado=True
-            )
-
-            print("Perfil WiFi guardado en BD")
-
-            self.wifi_conectado = True
-
-        else:
-
-            print("No se pudo conectar al WiFi. No se guarda perfil.")
-
-            self.wifi_conectado = False
 
         await server.stop()
 

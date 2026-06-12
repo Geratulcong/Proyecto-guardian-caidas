@@ -58,9 +58,8 @@ class RaspberryDB:
 
         conn.close()
 
-    def crear_raspberry(self, raspberry_id):
+    def crear_raspberry(self, raspberry_id, usuario_id=None):
         conn = get_connection()
-
         cursor = conn.cursor()
 
         sql = """
@@ -76,34 +75,33 @@ class RaspberryDB:
 
         cursor.execute(sql, (
             raspberry_id,
-            None,
+            usuario_id,
             "Desconectado",
-            "Desconectado",
+            "Vinculado" if usuario_id else "Desconectado",
             100
         ))
 
-
         conn.commit()
-
+        cursor.close()
         conn.close()
         
     def vincular_usuario(self, raspberry_id, usuario_id):
-            conn = get_connection()
-            cursor = conn.cursor()
+        conn = get_connection()
+        cursor = conn.cursor()
 
-            sql = """
-            UPDATE Raspberry_PI
-            SET usuario_id = %s,
-                raspberry_estado_pagina_web = %s
-            WHERE raspberry_id = %s
-            """
+        sql = """
+        UPDATE Raspberry_PI
+        SET usuario_id = %s,
+            raspberry_estado_pagina_web = %s
+        WHERE raspberry_id = %s
+        """
 
-            cursor.execute(sql, (
-                usuario_id,
-                "Vinculado",
-                raspberry_id
-            ))
+        cursor.execute(sql, (
+            usuario_id,
+            "Vinculado",
+            raspberry_id
+        ))
 
-            conn.commit()
-            cursor.close()
-            conn.close()
+        conn.commit()
+        cursor.close()
+        conn.close()
