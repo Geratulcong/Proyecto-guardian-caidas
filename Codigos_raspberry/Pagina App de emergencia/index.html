@@ -748,15 +748,8 @@ async function enviarWifiPorBLE(){
     const ssid = document.getElementById("ssid").value;
     const password = document.getElementById("passwordWifi").value;
 
-    const usuarioId = localStorage.getItem("usuario_id");
-
     if(!ssid || !password){
       alert("Debes ingresar SSID y contraseña");
-      return;
-    }
-
-    if(!usuarioId){
-      alert("No se encontró el usuario. Inicia sesión nuevamente.");
       return;
     }
 
@@ -769,14 +762,10 @@ async function enviarWifiPorBLE(){
       return;
     }
 
-    const datos = {
-      ssid: ssid,
-      password: password,
-      usuario_id: usuarioId
-    };
-
+    const datos = { ssid, password };
     const texto = JSON.stringify(datos);
-    const datosBLE = new TextEncoder().encode(texto);
+
+const datosBLE = new TextEncoder().encode(texto);
 
     if (caracteristicaWifi.properties.write) {
       await caracteristicaWifi.writeValueWithResponse(datosBLE);
