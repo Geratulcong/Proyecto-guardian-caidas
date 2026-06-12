@@ -762,7 +762,18 @@ async function enviarWifiPorBLE(){
       return;
     }
 
-    const datos = { ssid, password };
+    const usuarioId = localStorage.getItem("usuario_id");
+
+    if (!usuarioId) {
+      alert("No se encontró usuario_id. Inicia sesión nuevamente.");
+      return;
+    }
+
+    const datos = {
+      ssid: ssid,
+      password: password,
+      usuario_id: usuarioId
+    };
     const texto = JSON.stringify(datos);
 
 const datosBLE = new TextEncoder().encode(texto);

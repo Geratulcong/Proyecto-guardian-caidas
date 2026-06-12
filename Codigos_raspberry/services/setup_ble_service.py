@@ -68,6 +68,9 @@ class SetupBLEService:
 
         ssid = self.configuracion_recibida.get("ssid")
         password = self.configuracion_recibida.get("password")
+        usuario_id = self.configuracion_recibida.get("usuario_id")
+        print(f"SSID: {ssid}")
+        print(f"Usuario ID: {usuario_id}")
 
         wifi_service = WifiService()
 
