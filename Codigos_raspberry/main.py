@@ -19,6 +19,7 @@ connectivity_service = ConnectivityService()
 raspberry_db = RaspberryDB()
 modelo_caida_service = ModeloCaidaService()
 
+
 async def main():
 
     conectado = await connectivity_service.verificar_conexion()
@@ -32,7 +33,6 @@ async def main():
         wifi_configurado = await setup.iniciar()
 
         if not wifi_configurado:
-
             print("No se pudo configurar WiFi")
             return
 
@@ -41,12 +41,9 @@ async def main():
     datos = raspberry_db.obtener_raspberry(RASPBERRY_ID)
 
     if not datos:
-
-        print(f"Registrando Raspberry {RASPBERRY_ID}")
-
-        raspberry_db.crear_raspberry(RASPBERRY_ID)
-
-        datos = raspberry_db.obtener_raspberry(RASPBERRY_ID)
+        print("La Raspberry tiene WiFi, pero no está registrada en BD")
+        print("Debe configurarse desde la página enviando usuario_id por BLE")
+        return
 
     raspberry = RaspberryPi(
         raspberry_id=datos[0],
@@ -56,13 +53,13 @@ async def main():
         raspberry_nivel_bateria=float(datos[4])
     )
 
-    print(f"Raspberry cargado: {raspberry.raspberry_id}")
-
     if raspberry.usuario_id is None:
-        print("Raspberry registrada, pero aún no está vinculada a un usuario")
-        print(f"Usa este ID para vincularla desde la web: {raspberry.raspberry_id}")
-    else:
-        print(f"Raspberry vinculada al usuario: {raspberry.usuario_id}")
+        print("Raspberry registrada, pero sin usuario vinculado")
+        print("Vuelve a configurar el dispositivo desde la página")
+        return
+
+    print(f"Raspberry cargada: {raspberry.raspberry_id}")
+    print(f"Usuario vinculado: {raspberry.usuario_id}")
 
     raspberry.cambiar_estado(EstadoOperacion.MONITOREO)
 

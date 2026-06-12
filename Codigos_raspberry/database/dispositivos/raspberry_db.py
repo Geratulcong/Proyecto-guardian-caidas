@@ -1,109 +1,118 @@
-from database.connection import get_connection
+import asyncio
+import json
+
+from bless import BlessServer
+from bless import GATTCharacteristicProperties, GATTAttributePermissions
+
+from services.wifi_service import WifiService
+from services.raspberry_service import RaspberryService
+from database.dispositivos.perfil_wifi_db import PerfilWifiDB
+from database.dispositivos.raspberry_db import RaspberryDB
 
 
-class RaspberryDB:
+SERVICE_UUID = "12345678-1234-5678-1234-56789abcdef0"
+WIFI_CHAR_UUID = "87654321-4321-4321-4321-123456789abc"
 
-    def obtener_raspberry(self, raspberry_id):
-        """Obtiene un Raspberry de la BD"""
-        conn = get_connection()
-        cursor = conn.cursor()
 
-        sql = """
-        SELECT 
-            raspberry_id,
-            usuario_id,
-            raspberry_estado_arduino,
-            raspberry_estado_pagina_web,
-            raspberry_nivel_bateria
-        FROM Raspberry_PI
-        WHERE raspberry_id = %s
-        """
+class SetupBLEService:
 
-        cursor.execute(sql, (raspberry_id,))
-        
-        resultado = cursor.fetchone()
-        conn.close()
-        
-        return resultado
+    def __init__(self):
+        self.configuracion_recibida = None
+        self.wifi_conectado = False
 
-    def actualizar_estado(
-        self,
-        raspberry_id,
-        estado_arduino,
-        estado_pagina_web,
-        nivel_bateria
-    ):
+    def recibir_datos_wifi(self, characteristic, value, **kwargs):
+        try:
+            mensaje = value.decode("utf-8")
+            datos = json.loads(mensaje)
 
-        conn = get_connection()
+            print("Datos recibidos desde la página:")
+            print(datos)
 
-        cursor = conn.cursor()
+            self.configuracion_recibida = datos
 
-        sql = """
-        UPDATE Raspberry_Pi
-        SET
-            raspberry_estado_arduino = %s,
-            raspberry_estado_pagina_web = %s,
-            raspberry_nivel_bateria = %s
-        WHERE raspberry_id = %s
-        """
+        except Exception as e:
+            print(f"Error recibiendo configuración BLE: {e}")
 
-        cursor.execute(sql, (
-            estado_arduino,
-            estado_pagina_web,
-            nivel_bateria,
-            raspberry_id
-        ))
+    async def iniciar(self):
 
-        conn.commit()
+        print("Modo configuración BLE iniciado")
 
-        conn.close()
+        server = BlessServer(name="Detector-Caidas-Setup")
+        server.write_request_func = self.recibir_datos_wifi
 
-    def crear_raspberry(self, raspberry_id):
-        conn = get_connection()
+        await server.add_new_service(SERVICE_UUID)
 
-        cursor = conn.cursor()
-
-        sql = """
-        INSERT INTO Raspberry_PI (
-            raspberry_id,
-            usuario_id,
-            raspberry_estado_arduino,
-            raspberry_estado_pagina_web,
-            raspberry_nivel_bateria
+        await server.add_new_characteristic(
+            SERVICE_UUID,
+            WIFI_CHAR_UUID,
+            GATTCharacteristicProperties.write | GATTCharacteristicProperties.write_without_response,
+            bytearray(),
+            GATTAttributePermissions.writeable
         )
-        VALUES (%s, %s, %s, %s, %s)
-        """
 
-        cursor.execute(sql, (
-            raspberry_id,
-            None,
-            "Desconectado",
-            "Desconectado",
-            100
-        ))
+        await server.start()
 
+        print("Raspberry anunciándose por BLE")
+        print("Esperando datos desde la página...")
 
-        conn.commit()
+        while self.configuracion_recibida is None:
+            await asyncio.sleep(1)
 
-        conn.close()
-        
-    def vincular_usuario(self, raspberry_id, usuario_id):
-            conn = get_connection()
-            cursor = conn.cursor()
+        print("Configuración recibida correctamente")
 
-            sql = """
-            UPDATE Raspberry_PI
-            SET usuario_id = %s,
-                raspberry_estado_pagina_web = %s
-            WHERE raspberry_id = %s
-            """
+        ssid = self.configuracion_recibida.get("ssid")
+        password = self.configuracion_recibida.get("password")
+        usuario_id = self.configuracion_recibida.get("usuario_id")
 
-            cursor.execute(sql, (
-                usuario_id,
-                "Vinculado",
-                raspberry_id
-            ))
+        if not ssid or not password or not usuario_id:
+            print("Faltan datos: ssid, password o usuario_id")
+            await server.stop()
+            return False
 
-            conn.commit()
-            cursor.close()
-            conn.close()
+        wifi_service = WifiService()
+
+        conectado = await wifi_service.conectar_wifi(
+            ssid,
+            password
+        )
+
+        if conectado:
+
+            raspberry_id = RaspberryService.obtener_id()
+
+            raspberry_db = RaspberryDB()
+            datos_raspberry = raspberry_db.obtener_raspberry(raspberry_id)
+
+            if not datos_raspberry:
+                raspberry_db.crear_raspberry(
+                    raspberry_id=raspberry_id,
+                    usuario_id=usuario_id
+                )
+                print("Raspberry registrada y vinculada al usuario")
+            else:
+                raspberry_db.vincular_usuario(
+                    raspberry_id=raspberry_id,
+                    usuario_id=usuario_id
+                )
+                print("Raspberry existente vinculada al usuario")
+
+            perfil_wifi_db = PerfilWifiDB()
+
+            perfil_wifi_db.guardar_perfil(
+                raspberry_id=raspberry_id,
+                ssid=ssid,
+                seguridad="WPA2",
+                estado=True
+            )
+
+            print("Perfil WiFi guardado en BD")
+
+            self.wifi_conectado = True
+
+        else:
+            print("No se pudo conectar al WiFi. No se guarda perfil.")
+            self.wifi_conectado = False
+
+        await server.stop()
+
+        return self.wifi_conectado
