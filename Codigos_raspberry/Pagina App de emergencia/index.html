@@ -52,7 +52,7 @@
         .vista.activa { display: block; }
 
         .hero {
-            background: linear-gradient(135deg, #0d6efd, #4da3ff);
+            background: linear-gradient(135deg, #5191f0, #4da3ff);
             color: white;
             border-radius: 30px;
             padding: 35px;
@@ -119,12 +119,66 @@
 <body>
 
 <!-- Login Screen -->
-<div id="loginScreen" style="display:flex;justify-content:center;align-items:center;height:100vh;background:#f4f7fb;">
-    <div style="background:white;padding:40px;border-radius:20px;box-shadow:0 4px 15px rgba(0,0,0,.1);text-align:center;max-width:400px;width:100%;">
-        <h2>Guardian Anticaídas</h2>
-        <p>Inicia sesión para continuar</p>
-        <button id="btnGoogle" class="btn btn-primary btn-lg w-100">Iniciar sesión con Google</button>
+<div id="loginScreen"
+     style="
+     display:flex;
+     justify-content:center;
+     align-items:center;
+     height:100vh;
+     background:linear-gradient(135deg,#0d6efd,#4da3ff);
+     ">
+
+    <div style="
+        background:white;
+        padding:50px;
+        border-radius:30px;
+        box-shadow:0 10px 30px rgba(0,0,0,.15);
+        text-align:center;
+        max-width:500px;
+        width:90%;
+    ">
+
+        <div style="font-size:70px;">
+            🛡️
+        </div>
+
+        <h1 style="margin-top:10px;">
+            Guardian Anticaídas
+        </h1>
+
+        <p style="
+            color:#666;
+            font-size:18px;
+            margin-top:15px;
+        ">
+            Protección y monitoreo para personas mayores
+        </p>
+
+        <div style="
+            text-align:left;
+            margin:25px 0;
+            color:#444;
+        ">
+            <p>✓ Detección automática de caídas</p>
+            <p>✓ Alertas inmediatas por WhatsApp</p>
+            <p>✓ Configuración rápida y sencilla</p>
+        </div>
+
+        <button
+            id="btnGoogle"
+            class="btn btn-primary btn-lg w-100"
+            style="
+            border-radius:15px;
+            padding:14px;
+            font-weight:bold;
+            ">
+
+            Continuar con Google
+
+        </button>
+
     </div>
+
 </div>
 
 <!-- App Principal -->
@@ -137,7 +191,7 @@
         <div class="d-flex justify-content-between align-items-center w-100">
 
             <div class="logo">
-                App Emergencia
+                Guardian Anticaídas
             </div>
 
             <div class="nav-links">
@@ -216,25 +270,38 @@
         <h2>Datos del Usuario</h2>
 
         <div class="contact-card">
-
+            <label for="usuarioNombre" class="form-label">
+                Nombre Completo
+            </label>
             <input
                 id="usuarioNombre"
                 class="form-control mb-2"
                 placeholder="Nombre"
                 maxlength="30">
-
-            <input
-                id="usuarioApellido"
-                class="form-control mb-2"
-                placeholder="Apellido"
-                maxlength="30">
-
+            <label for="usuarioNumero" class="form-label">
+                Número de Teléfono
+            </label>
             <input
                 id="usuarioNumero"
                 class="form-control mb-3"
                 placeholder="+569XXXXXXXX"
+                maxlength="12">    
+            <label for="usuarioFamiliarNombre" class="form-label">
+                Nombre del Familiar
+            </label>
+            <input
+                id="usuarioFamiliarNombre"
+                class="form-control mb-2"
+                placeholder="Nombre Familiar"
+                maxlength="50">
+            <label for="usuarioFamiliarTelefono" class="form-label">
+                Teléfono del Familiar
+            </label>
+            <input
+                id="usuarioFamiliarTelefono"
+                class="form-control mb-2"
+                placeholder="+569XXXXXXXX"
                 maxlength="12">
-
             <button
                 class="btn btn-primary w-100"
                 onclick="guardarUsuario()">
@@ -531,8 +598,10 @@ async function guardarUsuario(){
   try {
     const nombre = document.getElementById('usuarioNombre').value.trim();
     const numero = document.getElementById('usuarioNumero').value.trim();
+    const nombreFamiliar = document.getElementById('usuarioFamiliarNombre').value.trim();
+    const numeroFamiliar = document.getElementById('usuarioFamiliarTelefono').value.trim();
 
-    if(!nombre || !numero){
+    if(!nombre || !numero || !nombreFamiliar || !numeroFamiliar){
       alert('Todos los campos son obligatorios');
       return;
     }
@@ -558,11 +627,15 @@ async function guardarUsuario(){
     // Guardar en localStorage
     localStorage.setItem('usuario_nombre', nombre);
     localStorage.setItem('usuario_telefono', numero);
+    localStorage.setItem('usuario_familiar_nombre', nombreFamiliar);
+    localStorage.setItem('usuario_familiar_telefono', numeroFamiliar);
 
     console.log('Guardando usuario en BD:', {
       usuario_id,
       nombre,
-      telefono: numero
+      telefono: numero,
+      familiar_nombre: nombreFamiliar,
+      familiar_telefono: numeroFamiliar
     });
 
     // Enviar a la BD
@@ -573,7 +646,9 @@ async function guardarUsuario(){
       },
       body: JSON.stringify({
         nombre: nombre,
-        telefono: numero
+        telefono: numero,
+        familiar_nombre: nombreFamiliar,
+        familiar_telefono: numeroFamiliar
       })
     });
 

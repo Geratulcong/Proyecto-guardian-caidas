@@ -110,7 +110,7 @@ def obtener_usuario(usuario_id):
 def actualizar_usuario(usuario_id):
     """
     Actualiza los datos de un usuario.
-    Puede actualizar: nombre, teléfono
+    Puede actualizar: nombre, teléfono,familiar_nombre, familiar_telefono
     """
     try:
         datos = request.json
@@ -129,12 +129,16 @@ def actualizar_usuario(usuario_id):
         # Actualizar con los datos proporcionados
         nombre = datos.get('nombre')
         telefono = datos.get('telefono')
+        familiar_nombre = datos.get('familiar_nombre')
+        familiar_telefono = datos.get('familiar_telefono')
         
         # Usar el nuevo método de actualización múltiple
         usuario_db.actualizar_usuario(
             usuario_id=usuario_id,
             nombre=nombre,
-            telefono=telefono
+            telefono=telefono,
+            familiar_nombre=familiar_nombre,
+            familiar_telefono=familiar_telefono
         )
         
         return jsonify({
@@ -142,15 +146,14 @@ def actualizar_usuario(usuario_id):
             'usuario_id': usuario_id,
             'datos_actualizados': {
                 'nombre': nombre,
-                'telefono': telefono
+                'telefono': telefono,
+                'familiar_nombre': familiar_nombre,
+                'familiar_telefono': familiar_telefono
             }
         }), 200
         
     except Exception as e:
         return jsonify({'error': str(e)}), 500
-
-@app.route('/api/usuarios/<usuario_id>', methods=['PUT'])
-
 
 
 # ================ ENDPOINTS DE CONTACTOS ================
