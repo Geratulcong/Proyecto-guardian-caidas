@@ -321,12 +321,17 @@
                     <div class="d-flex justify-content-between align-items-center mb-3">
                         <h5 class="m-0">Contacto 1</h5>
                         <div>
-                            <button class="btn btn-warning btn-sm me-2" onclick="editarContacto(this)">Editar</button>
+                            <button class="btn btn-primary btn-sm me-2" onclick="editarContacto(this)">Editar</button>
                             <button class="btn btn-danger btn-sm" onclick="eliminarContacto(this)">Eliminar</button>
                         </div>
                     </div>
-                    <input class="form-control mb-2 nombre" placeholder="Nombre" maxlength="30">
-                    <input class="form-control mb-2 apellido" placeholder="Apellido" maxlength="30">
+                    <label class="form-label fw-bold">
+                      Nombre Completo
+                    </label>
+                    <input class="form-control mb-2 nombre" placeholder="Nombre Completo" maxlength="30">
+                    <label class="form-label fw-bold">
+                      Número de Teléfono
+                    </label>
                     <input class="form-control numero" placeholder="+569XXXXXXXX" maxlength="12">
                 </div>
             </div>
@@ -416,7 +421,7 @@ function agregarContacto(){
   <div class="d-flex justify-content-between align-items-center mb-3">
     <h5 class="m-0">Contacto ${n}</h5>
     <div>
-      <button class="btn btn-warning btn-sm me-2" onclick="editarContacto(this)">Editar</button>
+      <button class="btn btn-primary btn-sm me-2" onclick="editarContacto(this)">Editar</button>
       <button class="btn btn-danger btn-sm" onclick="eliminarContacto(this)">Eliminar</button>
     </div>
   </div>
