@@ -68,7 +68,10 @@ async def main():
 
     print("Iniciando BLE con Arduino...")
 
-    await ble_service.conectar(modelo_caida_service)
+    await ble_service.conectar(
+    modelo_caida_service,
+    raspberry.usuario_id
+)
 
 
 asyncio.run(main())

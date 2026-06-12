@@ -6,6 +6,7 @@ import json
 import time
 
 from services.notification_service import NotificationService
+from database.usuario.contacto_db import ContactoDB
 
 DEVICE_NAME = "Sensor-Cadera"
 
@@ -22,7 +23,8 @@ class BLEService:
         self.modelo_caida_service = None
         self.ultima_alerta_caida = 0
         self.notification_service = NotificationService()
-
+        self.contacto_db = ContactoDB()
+        self.usuario_id = None
 
     
     async def enviar_mensaje_caida(self, probabilidad):
@@ -88,9 +90,10 @@ class BLEService:
         except Exception as e:
             print(f"Error BLE: {e}")
 
-    async def conectar(self, modelo_caida_service):
+    async def conectar(self, modelo_caida_service, usuario_id):
 
         self.modelo_caida_service = modelo_caida_service
+        self.usuario_id = usuario_id
 
         while True:
 
