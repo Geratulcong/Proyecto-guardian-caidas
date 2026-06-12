@@ -4,6 +4,7 @@ import json
 from bless import BlessServer
 from bless import GATTCharacteristicProperties, GATTAttributePermissions
 
+from Codigos_raspberry.services import wifi_service
 from services.wifi_service import WifiService
 from services.raspberry_service import RaspberryService
 from database.dispositivos.perfil_wifi_db import PerfilWifiDB
@@ -74,10 +75,13 @@ class SetupBLEService:
 
         wifi_service = WifiService()
 
-        conectado = await wifi_service.conectar_wifi(
-            ssid,
-            password
-        )
+        conectado = await wifi_service.conectar_wifi(ssid, password)
+
+        if not conectado:
+            print("Esperando unos segundos para verificar conexión real...")
+            await asyncio.sleep(8)
+
+            conectado = await wifi_service.verificar_conexion()     
 
         if conectado:
 
