@@ -42,7 +42,7 @@ class BLEService:
             await self.notification_service.enviar_whatsapp(
                 contacto_id=contacto_id,
                 telefono=telefono,
-                mensaje=f"ALERTA: Se detectó una caída. Probabilidad: {probabilidad:.2f}",
+                mensaje=f"ALERTA: Se detectó una caída.",
                 evento_id = None
             )
 
