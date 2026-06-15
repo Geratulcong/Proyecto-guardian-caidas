@@ -20,6 +20,19 @@ raspberry_db = RaspberryDB()
 # Configuración del servidor
 SERVER_IP = os.getenv('SERVER_IP', '0.0.0.0')
 SERVER_PORT = int(os.getenv('SERVER_PORT', 5000))
+SSL_CERT_FILE = os.getenv('SSL_CERT_FILE')
+SSL_KEY_FILE = os.getenv('SSL_KEY_FILE')
+SSL_ADHOC = os.getenv('SSL_ADHOC', 'false').lower() == 'true'
+
+
+def obtener_contexto_ssl():
+    if SSL_CERT_FILE and SSL_KEY_FILE:
+        return SSL_CERT_FILE, SSL_KEY_FILE
+
+    if SSL_ADHOC:
+        return 'adhoc'
+
+    return None
 
 
 @app.route('/api/usuarios/verificar-o-crear', methods=['POST'])
@@ -303,4 +316,19 @@ def serve_static(path):
 
 
 if __name__ == '__main__':
-    app.run(host=SERVER_IP, port=SERVER_PORT, debug=True)
+    ssl_context = obtener_contexto_ssl()
+    protocolo = 'https' if ssl_context else 'http'
+
+    print(f'Servidor disponible en {protocolo}://{SERVER_IP}:{SERVER_PORT}')
+    if SSL_ADHOC and not SSL_CERT_FILE:
+        print(
+            'Aviso: el certificado adhoc no es confiable para Android. '
+            'Usa SSL_CERT_FILE y SSL_KEY_FILE para Web Bluetooth.'
+        )
+
+    app.run(
+        host=SERVER_IP,
+        port=SERVER_PORT,
+        debug=True,
+        ssl_context=ssl_context
+    )

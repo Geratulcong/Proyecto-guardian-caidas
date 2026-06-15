@@ -1111,6 +1111,22 @@ function actualizarEstadoConfiguracion(conectado){
 }
 
 async function conectarBLE(){
+  if (!window.isSecureContext) {
+    alert(
+      'Bluetooth requiere una conexion HTTPS segura. ' +
+      'Abre esta pagina mediante HTTPS en Google Chrome.'
+    );
+    return;
+  }
+
+  if (!navigator.bluetooth || typeof navigator.bluetooth.requestDevice !== 'function') {
+    alert(
+      'Web Bluetooth no esta disponible en este navegador. ' +
+      'Usa Google Chrome en Android y verifica que Bluetooth este activado.'
+    );
+    return;
+  }
+
   try{
     dispositivoBLE = await navigator.bluetooth.requestDevice({
       filters: [{ name: "Detector-Caidas-Setup" }],
