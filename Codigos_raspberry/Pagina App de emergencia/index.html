@@ -42,6 +42,18 @@
 
         .logo { font-size: 28px; font-weight: bold; color: var(--primary-dark); }
 
+        .menu-toggle {
+            display: none;
+            width: 46px;
+            height: 42px;
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            background: var(--surface);
+            color: var(--primary-dark);
+            font-size: 25px;
+            line-height: 1;
+        }
+
         .nav-links {
             display: flex;
             gap: 10px;
@@ -284,7 +296,38 @@
 
         @media (max-width: 768px) {
             .hero { flex-direction: column; }
-            .nav-links { justify-content: center; }
+            .navbar-custom { padding: 12px 15px; }
+            .navbar-custom .container-fluid { padding: 0; }
+            .navbar-content {
+                flex-wrap: wrap;
+            }
+            .logo {
+                font-size: 21px;
+                padding-right: 10px;
+            }
+            .menu-toggle {
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
+                flex-shrink: 0;
+            }
+            .nav-links {
+                display: none;
+                flex-basis: 100%;
+                flex-direction: column;
+                gap: 8px;
+                margin-top: 12px;
+                padding: 12px;
+                background: var(--surface);
+                border: 1px solid var(--border);
+                border-radius: 18px;
+                box-shadow: var(--shadow);
+            }
+            .nav-links.abierto { display: flex; }
+            .nav-links button {
+                width: 100%;
+                text-align: left;
+            }
             .main-container { padding: 15px; }
             .profile-grid { grid-template-columns: 1fr; }
         }
@@ -362,13 +405,24 @@
 <nav class="navbar-custom">
     <div class="container-fluid">
 
-        <div class="d-flex justify-content-between align-items-center w-100">
+        <div class="navbar-content d-flex justify-content-between align-items-center w-100">
 
             <div class="logo">
                 Guardian Anticaídas
             </div>
 
-            <div class="nav-links">
+            <button
+                id="menuToggle"
+                class="menu-toggle"
+                type="button"
+                aria-label="Abrir menu de navegacion"
+                aria-controls="navLinks"
+                aria-expanded="false"
+                onclick="alternarMenu()">
+                &#9776;
+            </button>
+
+            <div id="navLinks" class="nav-links">
 
                 <button onclick="mostrarVista('inicio')">
                     Inicio
@@ -591,10 +645,33 @@ const WIFI_CHAR_UUID = "87654321-4321-4321-4321-123456789abc";
 function mostrarVista(id){
   document.querySelectorAll('.vista').forEach(v => v.classList.remove('activa'));
   document.getElementById(id).classList.add('activa');
+  cerrarMenu();
 
   const boton = document.getElementById('btnAgregarContacto');
   boton.style.display = (id === 'contactos') ? 'block' : 'none';
 }
+
+function alternarMenu(){
+  const menu = document.getElementById('navLinks');
+  const boton = document.getElementById('menuToggle');
+  const abierto = menu.classList.toggle('abierto');
+  boton.setAttribute('aria-expanded', abierto);
+  boton.setAttribute('aria-label', abierto ? 'Cerrar menu de navegacion' : 'Abrir menu de navegacion');
+}
+
+function cerrarMenu(){
+  const menu = document.getElementById('navLinks');
+  const boton = document.getElementById('menuToggle');
+  menu.classList.remove('abierto');
+  boton.setAttribute('aria-expanded', 'false');
+  boton.setAttribute('aria-label', 'Abrir menu de navegacion');
+}
+
+document.addEventListener('click', function(event){
+  if (!event.target.closest('.navbar-content')) {
+    cerrarMenu();
+  }
+});
 
 function actualizarResumenInicio(){
   const conectado = Boolean(dispositivoBLE && dispositivoBLE.gatt.connected);
